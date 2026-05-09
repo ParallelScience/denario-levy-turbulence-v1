@@ -1,0 +1,87 @@
+{
+    "sub_tasks": [
+        {
+            "bullet_points": [
+                "Load the raw cascade datasets (cascade_K41_delta_u.npy, cascade_logN_mild_delta_u.npy, cascade_logN_realistic_delta_u.npy).",
+                "Normalize the delta_u increments by their RMS velocity ONLY for sanity-checking purposes to verify that cascade_K41_delta_u.npy yields zeta_p approximately p/3.",
+                "Load kraichnan_xi1p00_x.npy and kraichnan_tgrid.npy.",
+                "Compute the Mean Squared Displacement (MSD) to verify that the scaling exponent H is approximately 0.5 for xi=1.0.",
+                "Print the verification results. Ensure that the raw (unnormalized) cascade data is preserved and saved/passed correctly for use in Step 2."
+            ],
+            "sub_task": "Data Integrity and Sanity Checks (Computation)",
+            "sub_task_agent": "engineer"
+        },
+        {
+            "bullet_points": [
+                "Load the raw (unnormalized) cascade datasets and cascade_r_scales.npy.",
+                "Compute structure functions S_p(r) for p=1..6 for each cascade dataset.",
+                "Perform linear regression on log(S_p) vs log(r) to extract the zeta_p exponents. Explicitly restrict this regression to the inertial range of scales, excluding boundary-dominated largest and smallest scales.",
+                "Compute residuals of the fits to verify linearity and statistical convergence.",
+                "Calculate the spectral roughness xi = 1 + zeta_2 for each cascade.",
+                "Load lorenz96_structure_functions.npy and extract its scaling exponents zeta_p.",
+                "Generate a plot of zeta_p vs p for the cascades and Lorenz-96, comparing them to theoretical models (e.g., log-normal model). Save as a high-resolution PNG."
+            ],
+            "sub_task": "Eulerian Cascade and Lorenz-96 Analysis & Visualization",
+            "sub_task_agent": "engineer"
+        },
+        {
+            "bullet_points": [
+                "Load all Kraichnan datasets (kraichnan_xi*_x.npy) representing single-particle trajectories, and kraichnan_tgrid.npy.",
+                "Correctly align the (10001,) time grid with the (200, 4001) trajectory data (e.g., by matching indices or interpolating).",
+                "Compute the MSD from single-particle displacements and calculate the local scaling exponent H(t).",
+                "Perform log-log regression in the asymptotic regime to extract the global scaling exponent H for each dataset, computing residuals to verify the asymptotic range.",
+                "Plot MSD vs time and H(t) vs time with consistent axis ranges across datasets.",
+                "Generate a dedicated plot comparing empirical alpha values (calculated as 1/H) against the theoretical 2/xi prediction, including a 1:1 reference line."
+            ],
+            "sub_task": "Kraichnan Single-Particle Dispersion & Visualization",
+            "sub_task_agent": "engineer"
+        },
+        {
+            "bullet_points": [
+                "Load rg_char_func_kraichnan_xi1p5.npy, rg_tau_values.npy, and rg_k_range.npy.",
+                "Extract the effective Levy index alpha_eff(tau) by fitting log(-log|phi(k, tau)|) vs log|k|.",
+                "Restrict the characteristic function fitting to positive k values only, and implement a minimum k threshold to avoid numerical noise near zero.",
+                "Compute residuals of the fits to ensure fit quality.",
+                "Apply a rolling average over tau to smooth the crossover of alpha_eff(tau).",
+                "Plot alpha_eff(tau) vs tau, adding horizontal reference lines at alpha=2 (ballistic) and alpha=2/xi (theoretical fixed point).",
+                "Include intermediate print statements to verify the computation steps."
+            ],
+            "sub_task": "RG Flow Analysis & Visualization",
+            "sub_task_agent": "engineer"
+        },
+        {
+            "bullet_points": [
+                "Load kolmogorov_kolmogorov_pure_disp.npy, kolmogorov_kolmogorov_multifractal_disp.npy, and kolmogorov_tgrid.npy.",
+                "Compute the characteristic function phi(k, t) at large times for the Kolmogorov datasets.",
+                "Estimate the empirical alpha via the tail index, restricting to positive k and applying a minimum k threshold.",
+                "Compute residuals of the fits to verify the scaling range.",
+                "Plot the characteristic functions and fits, ensuring consistent axis ranges.",
+                "Include intermediate print statements to verify the extracted empirical alpha values against the theoretical prediction (alpha approx 1.2)."
+            ],
+            "sub_task": "Kolmogorov Tracer Analysis & Visualization",
+            "sub_task_agent": "engineer"
+        },
+        {
+            "bullet_points": [
+                "For each Kraichnan dataset, explicitly verify the characteristic function form phi(k,t) = exp(-D_alpha |k|^alpha t).",
+                "Compute phi(k,t) at large times and plot -log(phi(k,t))/t vs k to check for collapse and scaling with |k|^alpha where alpha = 2/xi.",
+                "Compute the R-squared values of the fits to the theoretical form to quantify the agreement.",
+                "Save the plots as high-resolution PNGs and print the quantitative metrics."
+            ],
+            "sub_task": "Effective Operator Identification",
+            "sub_task_agent": "engineer"
+        },
+        {
+            "bullet_points": [
+                "Write the full Results section of the paper based on the generated plots and computed statistics.",
+                "Report numerical values with uncertainties (derived from the regression fits) for all key exponents (zeta_p, xi, H, alpha).",
+                "Include a summary table comparing theoretical predictions versus empirically extracted values for zeta_2, xi, H, and alpha across all datasets.",
+                "Interpret the plots generated in the previous steps, discussing the statistical convergence and residual analysis.",
+                "Discuss the connection between Eulerian multifractal statistics and the fractional operator governing Lagrangian particle transport.",
+                "Address the four scientific goals: Eulerian angle, Lagrangian angle, Connection (RG argument), and High-Re limit (Kolmogorov prediction)."
+            ],
+            "sub_task": "Final Report",
+            "sub_task_agent": "researcher"
+        }
+    ]
+}

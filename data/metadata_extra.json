@@ -1,0 +1,29 @@
+{
+  "cascade_model": {
+    "description": "Random multiplicative energy cascade (multifractal beta/log-normal model)",
+    "files": {
+      "cascade_K41_delta_u.npy": "shape (5000, 20), velocity increments, K41 (no intermittency)",
+      "cascade_logN_mild_delta_u.npy": "shape (5000, 20), mild intermittency mu=0.15",
+      "cascade_logN_realistic_delta_u.npy": "shape (5000, 20), realistic intermittency mu=0.28",
+      "cascade_K41_S_p.npy": "shape (6, 20), structure functions S_p for p=1..6",
+      "cascade_r_scales.npy": "shape (20,), scale r_l = 2^{-l}"
+    },
+    "physics": "Controls anomalous scaling of structure functions. K41: zeta_p=p/3. Log-normal: zeta_p=p/3 - mu*p(p-3)/18. The spectral exponent xi = 1 + zeta_2/2 connects to Kraichnan model."
+  },
+  "lorenz96": {
+    "description": "Lorenz-96 model: N=40 variables, F=8, deterministic turbulence analogue",
+    "files": {
+      "lorenz96_snapshots.npy": "shape (10000, 40), x_i(t) snapshots",
+      "lorenz96_structure_functions.npy": "shape (6, 20), S_p(lag) for p=1..6, lag=1..20"
+    }
+  },
+  "rg_flow": {
+    "description": "RG coarse-graining flow from Kraichnan xi=1.5 data",
+    "files": {
+      "rg_char_func_kraichnan_xi1p5.npy": "Characteristic functions at multiple time lags",
+      "rg_tau_values.npy": "Time indices used",
+      "rg_alpha_eff.npy": "Effective alpha extracted at each tau"
+    },
+    "physics": "The effective alpha should flow from 2 (ballistic) at small tau to 2/xi=1.333 at large tau, demonstrating RG flow to the L\u00e9vy-stable fixed point."
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "project": "L\u00e9vy flights in high-Re turbulence",
+  "datasets": {
+    "goy_shell_model": {
+      "description": "Sabra shell model, Eulerian multifractal cascade at high Re",
+      "files": {
+        "goy_velocity_shells.npy": "shape (T, 24), |u_n(t)| for each shell",
+        "goy_velocity_increments.npy": "shape (T, 23), delta_u_n = |u_{n+1}| - |u_n|",
+        "goy_k_shells.npy": "shape (24,), wavenumber k_n = 0.05 * 2^n"
+      },
+      "parameters": {
+        "N_shells": 24,
+        "lambda": 2.0,
+        "k0": 0.05,
+        "nu": 1e-07,
+        "forcing_amplitude": 0.5,
+        "forced_shells": "3-4",
+        "dt": 0.0001,
+        "N_steps_saved": "2000 (every 100 steps from 200000 total)",
+        "spinup": "50000 steps discarded"
+      },
+      "physics": "GOY/Sabra shell model captures multifractal energy cascade. Structure functions S_p(n) = <|u_n|^p> ~ k_n^{-zeta_p}. Anomalous scaling of zeta_p encodes intermittency corrections to Kolmogorov K41."
+    },
+    "kraichnan_model": {
+      "description": "Lagrangian tracers in Kraichnan (delta-correlated in time) velocity field",
+      "files": {
+        "kraichnan_xi0p50_x.npy": "shape (500, 10001), xi=0.5 -> H=0.25, alpha_eff=4.0",
+        "kraichnan_xi0p75_x.npy": "shape (500, 10001), xi=0.75 -> H=0.375, alpha_eff=2.67",
+        "kraichnan_xi1p00_x.npy": "shape (500, 10001), xi=1.0 -> H=0.5, alpha_eff=2.0 (normal)",
+        "kraichnan_xi1p50_x.npy": "shape (500, 10001), xi=1.5 -> H=0.75, alpha_eff=1.33",
+        "kraichnan_xi1p80_x.npy": "shape (500, 10001), xi=1.8 -> H=0.9, alpha_eff=1.11",
+        "kraichnan_tgrid.npy": "shape (10001,), time grid [0, 100]"
+      },
+      "parameters": {
+        "xi_values": [
+          0.5,
+          0.75,
+          1.0,
+          1.5,
+          1.8
+        ],
+        "N_tracer": 500,
+        "N_steps": 10000,
+        "dt": 0.01,
+        "N_k_modes": 128,
+        "k_range": "[0.1, 10.0]"
+      },
+      "physics": "Kraichnan model has exact RG solution. Velocity spectrum E(k) ~ k^{1-xi}. Exact result: tracer MSD ~ t^{xi} (anomalous with H=xi/2). For xi > 1: superdiffusion (L\u00e9vy-like). The fractional operator exponent alpha = 2/xi. This provides the exact mapping from turbulence spectrum roughness (xi) to the fractional Laplacian exponent (alpha)."
+    },
+    "kolmogorov_tracers": {
+      "description": "Lagrangian tracers in synthetic turbulence with Kolmogorov spectrum",
+      "files": {
+        "kolmogorov_kolmogorov_pure_disp.npy": "shape (300, 8001), pure K41 spectrum",
+        "kolmogorov_kolmogorov_multifractal_disp.npy": "shape (300, 8001), with intermittency",
+        "kolmogorov_tgrid.npy": "shape (8001,), time grid [0, 400]"
+      },
+      "parameters": {
+        "N_grid": 512,
+        "L_box": 100.0,
+        "N_tracer": 300,
+        "N_steps": 8000,
+        "dt": 0.05,
+        "inertial_range": "k in [0.314, 12.57]",
+        "N_modes_used": 64
+      },
+      "physics": "Pure K41: E(k) ~ k^{-5/3}. Kolmogorov exact result: Richardson t^3 law for pair dispersion; for single-particle diffusion in K41 flow, MSD ~ t^3 (L\u00e9vy-like superdiffusion). Intermittency corrections (beta model) shift the effective scaling exponent."
+    }
+  },
+  "key_physics": {
+    "RG_argument": "The spectral roughness parameter xi of the velocity field controls the fixed point of the RG flow. Under coarse-graining (integrating out k > Lambda), the diffusion operator renormalizes from -D*nabla^2 to -D_eff * (-nabla^2)^{alpha/2} where alpha = 2/xi for xi > 1.",
+    "connection_eulerian_lagrangian": "Structure function scaling zeta_p from GOY model -> velocity spectrum roughness xi -> tracer anomalous diffusion H=xi/2 -> fractional Laplacian exponent alpha=2/xi",
+    "half_laplacian": "The half-Laplacian (-nabla^2)^{1/2} corresponds to alpha=1, which requires xi=2 (rough turbulence at the boundary of validity). Physical turbulence with xi~5/3 gives alpha ~ 1.2 (close to but not exactly the half-Laplacian)."
+  }
+}

@@ -43,11 +43,11 @@ Lagrangian tracer trajectories in a 3D Kraichnan velocity field (Gaussian, white
 
 **Note**: The current simulation uses N_k_modes=128 Fourier modes with amplitude scaling A(k) ~ k^{(1-xi)/2}. The velocity amplitudes may be insufficiently large to produce strong anomalous diffusion at the available trajectory lengths. Analysis should directly compute the MSD scaling exponent H from the data and compare to the theoretical prediction H = xi/2.
 
-- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi0p50_x.npy` — shape (500, 10001), xi=0.5, theory: H=0.25, α=4.0 (subdiffusion)
-- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi0p75_x.npy` — shape (500, 10001), xi=0.75, theory: H=0.375, α=2.67
-- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi1p00_x.npy` — shape (500, 10001), xi=1.0, theory: H=0.5, α=2.0 (normal diffusion)
-- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi1p50_x.npy` — shape (500, 10001), xi=1.5, theory: H=0.75, α=1.33 (superdiffusion, Lévy-like)
-- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi1p80_x.npy` — shape (500, 10001), xi=1.8, theory: H=0.9, α=1.11 (near-ballistic)
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi0p50_x.npy` — shape (200, 4001), xi=0.5, theory: H=0.25, α=4.0 (subdiffusion)
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi0p75_x.npy` — shape (200, 4001), xi=0.75, theory: H=0.375, α=2.67
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi1p00_x.npy` — shape (200, 4001), xi=1.0, theory: H=0.5, α=2.0 (normal diffusion)
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi1p50_x.npy` — shape (200, 4001), xi=1.5, theory: H=0.75, α=1.33 (superdiffusion, Lévy-like)
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi1p80_x.npy` — shape (200, 4001), xi=1.8, theory: H=0.9, α=1.11 (near-ballistic)
 - `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_tgrid.npy` — shape (10001,), time grid [0, 100]
 
 Rows = independent trajectories, columns = time steps.
@@ -58,8 +58,8 @@ Rows = independent trajectories, columns = time steps.
 
 Lagrangian tracer positions in a 1D synthetic turbulent velocity field with Kolmogorov E(k) ~ k^{-5/3} spectrum, synthesized from 64 random-phase Fourier modes. Time evolution: each Fourier mode decorrelates at its eddy turnover time tau_k ~ k^{-2/3}. Positions are displacements from initial position.
 
-- `/home/node/work/projects/levy_turbulence_v1/data/kolmogorov_kolmogorov_pure_disp.npy` — shape (300, 8001), pure K41 spectrum
-- `/home/node/work/projects/levy_turbulence_v1/data/kolmogorov_kolmogorov_multifractal_disp.npy` — shape (300, 8001), K41 + intermittency correction (beta model exponent -0.3)
+- `/home/node/work/projects/levy_turbulence_v1/data/kolmogorov_kolmogorov_pure_disp.npy` — shape (150, 3001), pure K41 spectrum
+- `/home/node/work/projects/levy_turbulence_v1/data/kolmogorov_kolmogorov_multifractal_disp.npy` — shape (150, 3001), K41 + intermittency correction (beta model exponent -0.3)
 - `/home/node/work/projects/levy_turbulence_v1/data/kolmogorov_tgrid.npy` — shape (8001,), time grid [0, 400]
 
 ### 4. Lorenz-96 Model (Deterministic Turbulence Analogue)

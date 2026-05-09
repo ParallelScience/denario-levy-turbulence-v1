@@ -1,0 +1,86 @@
+{
+    "sub_tasks": [
+        {
+            "bullet_points": [
+                "Load the three cascade datasets (`cascade_K41_delta_u.npy`, `cascade_logN_mild_delta_u.npy`, `cascade_logN_realistic_delta_u.npy`) and `cascade_r_scales.npy`.",
+                "Compute structure functions $S_p(r) = \\langle |\\delta u_l|^p \\rangle$ for $p \\in [1, 6]$.",
+                "Use `cascade_r_scales.npy` as the x-axis for regression. Restrict the linear regression on $\\log(S_p)$ vs $\\log(r)$ to the inertial range (e.g., excluding the first 3 and last 3 cascade levels where boundary effects may corrupt scaling) to extract exponents $\\zeta_p$.",
+                "Calculate the spectral roughness $\\xi = 1 + \\zeta_2$ for each dataset.",
+                "Implement bootstrapping across realizations to compute standard errors for $\\zeta_p$ and $\\xi$.",
+                "Plot $\\zeta_p$ vs $p$ for the three datasets, comparing with the theoretical log-normal model predictions. Save the plot.",
+                "Print a formatted table comparing the extracted $\\zeta_p$ values against both the theoretical log-normal predictions ($\\zeta_p = p/3 - \\mu p(p-3)/18$) and the K41 baseline ($\\zeta_p = p/3$) for all three $\\mu$ values. Print the extracted $\\xi$ values with their uncertainties."
+            ],
+            "sub_task": "Eulerian Cascade Analysis",
+            "sub_task_agent": "engineer"
+        },
+        {
+            "bullet_points": [
+                "Load the Kraichnan tracer datasets for all $\\xi$ values and the time grid.",
+                "Calculate the Mean Squared Displacement (MSD) for each dataset. Perform power-law fits to extract the scaling exponent $H$, restricting the fit to the intermediate time range (excluding very early ballistic and very late saturation regimes). Print the fitted time range alongside $H$ for each $\\xi$, and verify $H = \\xi/2$.",
+                "For the $\\xi=1.5$ and $\\xi=1.8$ datasets, compute the characteristic function $\\phi(k, \\tau)$ of tracer displacements at various time lags $\\tau$.",
+                "Extract the effective fractional exponent $\\alpha_{eff}(\\tau)$ by performing a linear fit of $\\log(-\\log|\\phi(k, \\tau)|)$ vs $\\log|k|$ for small $k$.",
+                "Load and incorporate the pre-computed RG flow data (`rg_char_func_kraichnan_xi1p5.npy`, `rg_tau_values.npy`, `rg_k_range.npy`, `rg_alpha_eff.npy`). Compare the pre-computed `rg_alpha_eff.npy` (which is noted to be unreliable at ~2.0) against the newly extracted $\\alpha_{eff}$ values, explicitly flagging the discrepancy in the printed output.",
+                "Plot the MSD vs time for all $\\xi$, and $\\alpha_{eff}$ vs $\\tau$ for $\\xi=1.5, 1.8$ to visualize the RG flow towards $\\alpha = 2/\\xi$. Save the plots and print the extracted $H$ and asymptotic $\\alpha$ values."
+            ],
+            "sub_task": "Kraichnan MSD Scaling and RG Flow",
+            "sub_task_agent": "engineer"
+        },
+        {
+            "bullet_points": [
+                "Using the $\\xi$ values from Step 1, calculate the predicted fractional exponent $\\alpha_{pred} = 2/\\xi$ for the pure and multifractal cases.",
+                "Load the Kolmogorov synthetic tracer datasets (pure and multifractal) and the time grid (`kolmogorov_tgrid.npy`). Note that the time grid has shape (8001,) but displacement arrays have shape (150, 3001); use only the first 3001 time points from the time grid to avoid index mismatch errors.",
+                "Estimate the empirical $\\alpha$ for these datasets using the characteristic function method at large time lags.",
+                "Compute the Hill estimator for the tail index of the displacement distributions to provide a secondary estimate of $\\alpha$.",
+                "Estimate the velocity correlation time $\\tau_{corr}$ from the tracer displacements. Explicitly compute and print the ratio of $\\tau_{corr}$ to the total trajectory length, and flag whether the trajectories are long enough to reach the asymptotic Lévy-stable regime.",
+                "Plot the characteristic functions and the Hill estimator as a function of threshold. Save the plots and print the comparison between empirical $\\alpha$ and $\\alpha_{pred}$."
+            ],
+            "sub_task": "Kolmogorov Tracer Statistics & Eulerian-Lagrangian Mapping",
+            "sub_task_agent": "engineer"
+        },
+        {
+            "bullet_points": [
+                "Load the Lorenz-96 snapshots and structure functions datasets.",
+                "Plot $\\log(S_2(r))$ vs $\\log(r)$ to identify the inertial range and extract the effective spectral roughness $\\xi$ via linear regression.",
+                "Compute tracer displacements by integrating the velocity snapshots over time (cumulative sum multiplied by $dt=0.05$). Note that this represents a crude Euler integration of a chaotic system.",
+                "Calculate the MSD and the characteristic function of these deterministic displacements to extract the empirical $H$ and $\\alpha$. Print a warning if the resulting MSD shows non-monotonic or pathological behavior.",
+                "Test if the theoretical relation $\\alpha = 2/\\xi$ holds for this deterministic chaotic system.",
+                "Save the plots of $S_2(r)$ and the extracted $\\alpha_{eff}(\\tau)$, and print the numerical results."
+            ],
+            "sub_task": "Lorenz-96 Deterministic Analysis",
+            "sub_task_agent": "engineer"
+        },
+        {
+            "bullet_points": [
+                "For the Kraichnan ($\\xi=1.5, 1.8$) and Kolmogorov datasets, normalize the large-time tracer displacements by the scale factor $t^{1/\\alpha}$ using the theoretically predicted $\\alpha$ values ($\\alpha = 2/\\xi$) rather than only the empirically determined ones.",
+                "Plot the empirical Probability Density Functions (PDFs) of the normalized displacements to demonstrate collapse onto a master curve.",
+                "Perform a Kolmogorov-Smirnov (KS) test comparing the normalized empirical distributions against the theoretical symmetric Lévy-stable distribution (using `scipy.stats.levy_stable`) with the theoretical $\\alpha$.",
+                "Save the collapsed PDF plots and print the KS test statistics and p-values to rigorously validate the fractional diffusion operator."
+            ],
+            "sub_task": "Fractional Operator Identification",
+            "sub_task_agent": "engineer"
+        },
+        {
+            "bullet_points": [
+                "Consolidate the extracted $\\alpha$ and $\\xi$ values (with their bootstrapped uncertainties) across all analyzed models: Kraichnan, Kolmogorov, and Lorenz-96.",
+                "Create a final synthesis plot showing the empirical $\\alpha$ versus the theoretical prediction $2/\\xi$. Include the theoretical curve $\\alpha = 2/\\xi$ as a reference.",
+                "Quantify and print the shift in $\\alpha$ induced by the intermittency parameter $\\mu$ (comparing pure vs multifractal Kolmogorov, and K41 vs realistic cascade).",
+                "Discuss (via print statements) the impact of finite correlation times on the deviations from the Kraichnan idealization.",
+                "Save the synthesis plot.",
+                "Save all consolidated numerical results ($\\xi$, $\\alpha_{empirical}$, $\\alpha_{theoretical}$, $H$, bootstrap uncertainties, KS statistics) as a structured CSV file with clearly labeled columns."
+            ],
+            "sub_task": "Synthesis, Robustness, and Uncertainty Quantification",
+            "sub_task_agent": "engineer"
+        },
+        {
+            "bullet_points": [
+                "Write the full Results section of the research paper based on the generated plots, printed statistics, and KS test results from the previous steps.",
+                "Structure the section logically: start with the Eulerian cascade and structure functions, move to the Kraichnan RG flow and MSD scaling, discuss the Kolmogorov and Lorenz-96 results, and conclude with the fractional operator identification and synthesis.",
+                "Interpret the physical meaning of the transition from short-time Gaussian to long-time Lévy-stable behavior, and the impact of intermittency ($\\mu$) on the fractional exponent $\\alpha$.",
+                "Reference the specific plots generated in the previous steps and include the quantitative results (exponents, uncertainties, p-values) to support the conclusions.",
+                "Include a dedicated subsection on the limitations of the analysis, specifically addressing: (a) the finite trajectory length relative to $\\tau_{corr}$ in the Kolmogorov datasets, (b) the crude Euler integration used for Lorenz-96 tracers, and (c) the discrepancy between the pre-computed `rg_alpha_eff` values and the recomputed ones."
+            ],
+            "sub_task": "Write Results Section",
+            "sub_task_agent": "researcher"
+        }
+    ]
+}

@@ -1,0 +1,1488 @@
+
+###### PROMPT BEGINS ########
+Human: 
+**Role**: You are a Senior Scientific Researcher.
+**Objective**: Based on the provided dataset description and potential previous ideas, generate 10 distinct, high-impact research ideas for a scientific project. 
+
+**Task**: 
+Generate 10 research ideas that could lead to meaningful scientific discovery. These ideas must be diverse in their approach to the data and must be different to previous existing ideas.
+
+**Operational Constraints**:
+- We are trying to sample the ideas space as widely as possible. Thus, if there are existing ideas, make the 10 ideas as different as possible from the existing ones.
+- The 10 ideas should also be as different from each other as possible.
+- **Conciseness**: Each idea should be 3-4 sentences max. Focus on the "Research Question," not the execution.
+- **No Methodology**: Do not include plans, code, or specific algorithms. Only state the *Research Objective*.
+- **Consistency**: The ideas must strictly adhere to the constraints and physical reality described in the data description.
+- **Zero Redundancy**: If two ideas feel similar, discard one and find a new scientific angle.
+- Each idea must consist of a title and a brief description of it.
+
+Data description:
+
+# Lévy Flights in High-Reynolds-Number Turbulence: Effective Physical Theory
+
+## Scientific Goal
+
+Discover the minimal effective physical theory underlying Lévy flights / anomalous diffusion (governed by the half-Laplacian and its generalization (-Δ)^{α/2}) in high-Reynolds-number turbulence. Specifically:
+
+1. **Eulerian angle**: What feature of the turbulent energy cascade (structure function scaling, multifractal spectrum, intermittency) determines the fractional Laplacian exponent α?
+2. **Lagrangian angle**: What is the physical mechanism by which turbulent velocity fields produce Lévy-stable tracer statistics?
+3. **Connection**: Can we derive a renormalization group (RG) argument connecting the Eulerian spectral exponent xi (roughness of the velocity field) to the Lagrangian fractional diffusion exponent α = 2/xi?
+4. **High-Re limit**: Does the effective fractional operator converge as Re → ∞, and what is the limiting α for Kolmogorov turbulence (xi = 5/3)?
+
+## Data Summary
+
+Four complementary datasets, covering Eulerian cascade statistics and Lagrangian tracer dynamics.
+
+---
+
+## File Inventory
+
+### 1. Random Multiplicative Energy Cascade (Eulerian, multifractal model)
+
+Simulates the turbulent energy cascade from large to small scales via log-normal random multipliers. At each cascade level l, the velocity increment scales as delta_u_l = u_0 * exp(sum_{j≤l} log(W_j) / 3) where W_j ~ LogNormal(-σ²/2, σ²) with σ² = μ·log(2) and μ is the intermittency parameter.
+
+**Note on data quality**: The structure function exponents zeta_p may need to be recomputed by the analysis code. The saved delta_u arrays contain the raw cascade realizations; structure functions S_p(r) = <|delta_u_l|^p> should be computed fresh from the raw data.
+
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_K41_delta_u.npy` — shape (5000, 20), μ=0.0 (pure K41, no intermittency). Expected: zeta_p = p/3.
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_logN_mild_delta_u.npy` — shape (5000, 20), μ=0.15 (mild intermittency). Expected: zeta_p = p/3 - μ·p(p-3)/18.
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_logN_realistic_delta_u.npy` — shape (5000, 20), μ=0.28 (realistic turbulence). Expected: zeta_p = p/3 - 0.28·p(p-3)/18.
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_K41_S_p.npy` — shape (6, 20), pre-computed S_p(l) for p=1..6 (may need recomputing).
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_r_scales.npy` — shape (20,), r_l = 2^{-l}.
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_zeta_p_K41.npy` — shape (6,), K41 predictions p/3.
+
+Cascade levels: l=0..19 (largest to smallest scale). Each row in delta_u is an independent realization. Each column is a cascade level.
+
+**Physics**: The energy spectrum E(k) ~ k^{-1-2h} where h = <log(W)/log(lambda)> = 1/3 for K41. The spectral roughness parameter xi = 1 + 2·zeta_2/2 = 1 + zeta_2 connects the cascade statistics to the Kraichnan model. For K41: xi = 5/3.
+
+### 2. Kraichnan Model — Lagrangian Tracers in Synthetic Turbulence
+
+Lagrangian tracer trajectories in a 3D Kraichnan velocity field (Gaussian, white-in-time, prescribed power-law spectrum E(k) ~ k^{1-xi}). Each trajectory is the x-component of a 3D tracer path; the velocity at each step is drawn from fresh random Fourier modes, making the field delta-correlated in time (exact Kraichnan model).
+
+**Key exact result** (Falkovich, Gawedzki, Vergassola 2001): For the Kraichnan model, the tracer MSD scales as <x²(t)> ~ t^{xi} (anomalous diffusion with H = xi/2). The coarse-grained transport is governed by the fractional diffusion equation ∂_t P = -D_α(-∂²_x)^{α/2} P with **α = 2/xi**. This is the exact RG fixed point.
+
+**Note**: The current simulation uses N_k_modes=128 Fourier modes with amplitude scaling A(k) ~ k^{(1-xi)/2}. The velocity amplitudes may be insufficiently large to produce strong anomalous diffusion at the available trajectory lengths. Analysis should directly compute the MSD scaling exponent H from the data and compare to the theoretical prediction H = xi/2.
+
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi0p50_x.npy` — shape (200, 4001), xi=0.5, theory: H=0.25, α=4.0 (subdiffusion)
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi0p75_x.npy` — shape (200, 4001), xi=0.75, theory: H=0.375, α=2.67
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi1p00_x.npy` — shape (200, 4001), xi=1.0, theory: H=0.5, α=2.0 (normal diffusion)
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi1p50_x.npy` — shape (200, 4001), xi=1.5, theory: H=0.75, α=1.33 (superdiffusion, Lévy-like)
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi1p80_x.npy` — shape (200, 4001), xi=1.8, theory: H=0.9, α=1.11 (near-ballistic)
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_tgrid.npy` — shape (10001,), time grid [0, 100]
+
+Rows = independent trajectories, columns = time steps.
+
+**For the Kolmogorov case**: Physical turbulence has xi ≈ 5/3 ≈ 1.667, giving theoretical α = 2/xi ≈ 1.2. The xi=1.5 and xi=1.8 datasets bracket this value and can be interpolated.
+
+### 3. Kolmogorov-Spectrum Tracers (1D Synthetic Turbulence)
+
+Lagrangian tracer positions in a 1D synthetic turbulent velocity field with Kolmogorov E(k) ~ k^{-5/3} spectrum, synthesized from 64 random-phase Fourier modes. Time evolution: each Fourier mode decorrelates at its eddy turnover time tau_k ~ k^{-2/3}. Positions are displacements from initial position.
+
+- `/home/node/work/projects/levy_turbulence_v1/data/kolmogorov_kolmogorov_pure_disp.npy` — shape (150, 3001), pure K41 spectrum
+- `/home/node/work/projects/levy_turbulence_v1/data/kolmogorov_kolmogorov_multifractal_disp.npy` — shape (150, 3001), K41 + intermittency correction (beta model exponent -0.3)
+- `/home/node/work/projects/levy_turbulence_v1/data/kolmogorov_tgrid.npy` — shape (8001,), time grid [0, 400]
+
+### 4. Lorenz-96 Model (Deterministic Turbulence Analogue)
+
+Lorenz-96 system: dx_i/dt = (x_{i+1} - x_{i-2})·x_{i-1} - x_i + F with N=40 variables, F=8 (well-developed chaotic regime). Used as a deterministic turbulence analogue with known structure function statistics.
+
+- `/home/node/work/projects/levy_turbulence_v1/data/lorenz96_snapshots.npy` — shape (10000, 40), x_i(t) snapshots at dt=0.05
+- `/home/node/work/projects/levy_turbulence_v1/data/lorenz96_structure_functions.npy` — shape (6, 20), S_p(lag) for p=1..6, spatial lag=1..20
+
+S_2(1) ≈ 24.6 (from simulation). Lorenz-96 with F=8 is known to exhibit anomalous diffusion in the long-time limit.
+
+### 5. RG Flow Data
+
+Characteristic functions of Kraichnan xi=1.5 tracer displacements at multiple time lags, computed to observe the RG flow of the effective diffusion operator.
+
+- `/home/node/work/projects/levy_turbulence_v1/data/rg_char_func_kraichnan_xi1p5.npy` — shape (10, 200), φ(k,τ) at tau_idx=[1,5,20,50,100,200,500,1000,2000,5000]
+- `/home/node/work/projects/levy_turbulence_v1/data/rg_tau_values.npy` — shape (10,), time indices
+- `/home/node/work/projects/levy_turbulence_v1/data/rg_k_range.npy` — shape (200,), k values in [-2, 2]
+- `/home/node/work/projects/levy_turbulence_v1/data/rg_alpha_eff.npy` — shape (10,), pre-computed effective alpha (all ≈2.0 — needs reanalysis with better fitting)
+
+---
+
+## Key Theoretical Connections
+
+### Kraichnan RG Fixed Point (exact)
+For the Kraichnan model with E(k) ~ k^{1-xi}:
+- Scaling: <x²(t)> ~ t^{xi}, H = xi/2
+- Effective operator: (-∂²)^{α/2} with **α = 2/xi**
+- For K41 (xi = 5/3): **α_K41 ≈ 1.2** (close to but not exactly the half-Laplacian α=1)
+- For the half-Laplacian (α=1): requires xi=2 (maximally rough Kraichnan field)
+
+### Structure Function Connection (Eulerian → Lagrangian)
+From Taylor's hypothesis and the Kolmogorov refined similarity hypothesis:
+- Second-order structure function: S_2(r) ~ r^{zeta_2}
+- Energy spectrum: E(k) ~ k^{-(1+zeta_2)} → xi = 1 + zeta_2
+- K41: zeta_2 = 2/3, xi = 5/3, α = 6/5 = 1.2
+- With intermittency (She-Leveque): zeta_2 ≈ 0.696, xi ≈ 1.696, α ≈ 1.18
+
+### RG Argument Sketch
+Under coarse-graining (integrating out wavenumbers k > Λ):
+1. The tracer equation dx/dt = v(x,t) + noise renormalizes
+2. The velocity correlator <v(x)v(0)> ~ |x|^{xi-1} acts as a long-range noise
+3. By the generalized CLT, the accumulated displacement converges to α-stable with α = 2/xi
+4. The fixed-point equation is the fractional diffusion equation ∂_t P = -D_α(-∂²)^{α/2} P
+5. The RG flow: α(Λ) flows from 2 (at Λ=k_max, ballistic) to 2/xi (at Λ→0, diffusive limit)
+
+---
+
+## Suggested Analyses
+
+1. **Verify Kraichnan RG**: Compute MSD scaling exponent H for each xi dataset and test H = xi/2. Compute characteristic function and extract effective α(τ) as a function of time lag to show convergence to α = 2/xi.
+
+2. **Structure function scaling**: From cascade data, compute zeta_p(mu) for mu=0, 0.15, 0.28. Fit the log-normal formula zeta_p = p/3 - mu·p(p-3)/18. Extract xi = 1 + zeta_2 for each case.
+
+3. **Eulerian → Lagrangian mapping**: Connect the cascade zeta_2 to the Kraichnan xi, and verify that α = 2/xi = 2/(1+zeta_2) across all intermittency values.
+
+4. **RG flow**: Plot α_eff(τ) from the characteristic function data and fit the crossover from α≈2 (short times) to α=2/xi (long times). Extract the crossover time as a function of xi.
+
+5. **Kolmogorov prediction**: For the physical case xi=5/3, compute the predicted fractional exponent α=6/5=1.2. Test whether the kolmogorov_pure tracer data is consistent with this.
+
+6. **Intermittency correction**: Quantify how She-Leveque intermittency corrections shift xi and hence α away from the K41 prediction.
+
+7. **Effective operator identification**: For each dataset, test whether the large-time tracer PDF satisfies the fractional diffusion equation with α=2/xi by checking the characteristic function form φ(k,t) = exp(-D_α|k|^α·t).
+
+
+
+
+Human feedback:
+The previous iteration failed because the simulation data did not correctly produce anomalous diffusion. We have now fixed the Kraichnan pair dispersion simulation using a shared velocity field. The key physical insight (Falkovich, Gawedzki, Vergassola 2001): in the Kraichnan model, PAIR DISPERSION (relative separation of two tracers) shows anomalous scaling with H=xi/2, directly related to the fractional Laplacian exponent alpha=2/xi. Single-particle diffusion is normal. The new data files kraichnan_xi*_pair_r2.npy contain mean squared pair separation vs time for xi=0.5,1.0,1.5,1.8 (6001 time points, T=60). The new idea should: (1) establish the exact RG argument connecting Eulerian roughness xi to the pair-dispersion fractional exponent alpha=2/xi, (2) verify this numerically from the pair_r2 data and cascade structure functions, (3) connect to K41 (xi=5/3, alpha=1.2) and She-Leveque intermittency corrections. Maximum 4 analysis steps.
+
+Take into account the human feedback when generating ideas. The feedback should guide your idea generation process, helping you focus on specific aspects, approaches, or directions that the human has indicated.
+
+
+
+
+Respond in the following format:
+
+\\begin{IDEAS}
+<IDEAS>
+\\end{IDEAS}
+
+In <IDEAS>, put the ideas you have generated. 
+
+###### PROMPT ENDS ########
+
+###### RESPONSE [model: gemini-3.1-flash-lite-preview] ########
+\begin{IDEAS}
+1. **Universal Scaling of Pair Dispersion**: Establish the renormalization group mapping between the Eulerian structure function exponent $\zeta_2$ and the pair-dispersion anomalous exponent $\alpha = 2/(1+\zeta_2)$. Use the provided pair-separation data to empirically demonstrate that the transition from ballistic to diffusive regimes is governed strictly by the Eulerian spectral roughness.
+
+2. **Intermittency-Induced Fractional Drift**: Investigate how the multifractal intermittency parameter $\mu$ modifies the effective fractional Laplacian operator. Test if the "realistic" cascade data ($\mu=0.28$) induces a systematic deviation from the K41-predicted $\alpha = 1.2$, characterizing the shift in the Lévy flight probability density function.
+
+3. **Temporal Crossover Dynamics**: Analyze the transition from short-time ballistic behavior to long-time fractional diffusion in the pair-dispersion data. Determine if the crossover timescale scales as a power law of the spectral exponent $\xi$, providing a dynamical signature of the turbulent energy cascade's influence on particle separation.
+
+4. **Deterministic Chaos vs. Stochastic Turbulence**: Compare the pair-dispersion statistics of the Lorenz-96 deterministic system against the synthetic Kraichnan model. Determine if the deterministic "turbulence" exhibits a stable fractional exponent $\alpha$ equivalent to a specific Kraichnan $\xi$, testing the universality of Lévy flights in non-stochastic systems.
+
+5. **Renormalization of the Fractional Operator**: Utilize the characteristic function data to identify the non-integer order of the effective fractional Laplacian across varying time lags. Map the "flow" of $\alpha(\tau)$ to determine the scale-dependency of the anomalous diffusion operator as it approaches the asymptotic fixed point.
+
+6. **The $\alpha=1.2$ Limit in Kolmogorov Turbulence**: Quantify the validity of the $\alpha = 6/5$ prediction for physical Kolmogorov turbulence. Test whether the synthetic K41 tracer data exhibits sufficient Lévy-stable statistics to satisfy the fractional diffusion equation, or if higher-order intermittency corrections are strictly required for convergence.
+
+7. **Structure Function Sensitivity to Tracer Statistics**: Develop a mapping function that predicts the pair-dispersion exponent $\alpha$ solely from the Eulerian structure functions $S_p(r)$. Evaluate whether the higher-order moments ($p>2$) in the multiplicative cascade data refine the prediction of $\alpha$ beyond the standard $\xi=1+\zeta_2$ approximation.
+
+8. **Geometric Constraints of Lévy Flights**: Explore the relationship between the dimensionality of the turbulent velocity field and the resulting fractional exponent. Analyze whether the Kraichnan pair-dispersion results are invariant to spatial constraints, or if the fractional diffusion operator requires an additional geometric correction factor for 3D turbulence.
+
+9. **Stability of the RG Fixed Point under Intermittency**: Test the hypothesis that intermittency effectively acts as a perturbation to the Kraichnan RG fixed point. Determine if the pair-dispersion exponent $\alpha$ maintains stability under varying $\mu$ values or if the fractional Laplacian generalization is sensitive to the multifractal spectrum of the energy cascade.
+
+10. **Velocity Field Correlation Decay**: Analyze the Lagrangian velocity autocorrelation function derived from the Kraichnan model to identify the specific correlation decay rate associated with $\alpha = 1.2$. Examine if the memory effects in the turbulent velocity field are the sole physical driver of the anomalous diffusion exponent in the high-Reynolds-number limit.
+\end{IDEAS}
+
+
+###### PROMPT BEGINS ########
+Human: 
+**Role**: Senior Scientific Lead and Final Decision Maker.
+**Objective**: Review the ideas prioritized by the three independent Reviewer Agents and select the single most promising research project to proceed to the implementation phase.
+
+**Context**: 
+A pool of 10 initial ideas was generated. Three independent agents have evaluated those ideas and identified their top selections (provided below). Your role is to serve as the final filter, selecting the "Best of the Best" based on scientific merit and the constraints of the dataset.
+
+**Evaluation Criteria**:
+1. **Scientific Consensus**: Does an idea appear as a top choice for multiple reviewers?
+2. **Execution Readiness**: Given the 'Data Description,' which idea is most likely to produce a valid, non-erroneous scientific result?
+3. **Strategic Impact**: Which project offers the most meaningful contribution to the Foundation's research goals?
+4. **Novelty vs Previous Work**: The selected idea should be as different as possible from any previous ideas to ensure new scientific contributions.
+
+**Operational Constraints**:
+- **Selection Only**: You must select exactly one idea.
+- **Strict Fidelity**: Do not modify, rephrase, or correct the original text of the idea. 
+- **Zero Commentary**: Do not justify your decision, provide pros/cons, or offer any introductory text.
+- **Output Integrity**: Provide **only** the text of the selected idea within the required tags.
+- The selected idea must contain a title and a description of the idea
+
+Data description:
+
+# Lévy Flights in High-Reynolds-Number Turbulence: Effective Physical Theory
+
+## Scientific Goal
+
+Discover the minimal effective physical theory underlying Lévy flights / anomalous diffusion (governed by the half-Laplacian and its generalization (-Δ)^{α/2}) in high-Reynolds-number turbulence. Specifically:
+
+1. **Eulerian angle**: What feature of the turbulent energy cascade (structure function scaling, multifractal spectrum, intermittency) determines the fractional Laplacian exponent α?
+2. **Lagrangian angle**: What is the physical mechanism by which turbulent velocity fields produce Lévy-stable tracer statistics?
+3. **Connection**: Can we derive a renormalization group (RG) argument connecting the Eulerian spectral exponent xi (roughness of the velocity field) to the Lagrangian fractional diffusion exponent α = 2/xi?
+4. **High-Re limit**: Does the effective fractional operator converge as Re → ∞, and what is the limiting α for Kolmogorov turbulence (xi = 5/3)?
+
+## Data Summary
+
+Four complementary datasets, covering Eulerian cascade statistics and Lagrangian tracer dynamics.
+
+---
+
+## File Inventory
+
+### 1. Random Multiplicative Energy Cascade (Eulerian, multifractal model)
+
+Simulates the turbulent energy cascade from large to small scales via log-normal random multipliers. At each cascade level l, the velocity increment scales as delta_u_l = u_0 * exp(sum_{j≤l} log(W_j) / 3) where W_j ~ LogNormal(-σ²/2, σ²) with σ² = μ·log(2) and μ is the intermittency parameter.
+
+**Note on data quality**: The structure function exponents zeta_p may need to be recomputed by the analysis code. The saved delta_u arrays contain the raw cascade realizations; structure functions S_p(r) = <|delta_u_l|^p> should be computed fresh from the raw data.
+
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_K41_delta_u.npy` — shape (5000, 20), μ=0.0 (pure K41, no intermittency). Expected: zeta_p = p/3.
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_logN_mild_delta_u.npy` — shape (5000, 20), μ=0.15 (mild intermittency). Expected: zeta_p = p/3 - μ·p(p-3)/18.
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_logN_realistic_delta_u.npy` — shape (5000, 20), μ=0.28 (realistic turbulence). Expected: zeta_p = p/3 - 0.28·p(p-3)/18.
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_K41_S_p.npy` — shape (6, 20), pre-computed S_p(l) for p=1..6 (may need recomputing).
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_r_scales.npy` — shape (20,), r_l = 2^{-l}.
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_zeta_p_K41.npy` — shape (6,), K41 predictions p/3.
+
+Cascade levels: l=0..19 (largest to smallest scale). Each row in delta_u is an independent realization. Each column is a cascade level.
+
+**Physics**: The energy spectrum E(k) ~ k^{-1-2h} where h = <log(W)/log(lambda)> = 1/3 for K41. The spectral roughness parameter xi = 1 + 2·zeta_2/2 = 1 + zeta_2 connects the cascade statistics to the Kraichnan model. For K41: xi = 5/3.
+
+### 2. Kraichnan Model — Lagrangian Tracers in Synthetic Turbulence
+
+Lagrangian tracer trajectories in a 3D Kraichnan velocity field (Gaussian, white-in-time, prescribed power-law spectrum E(k) ~ k^{1-xi}). Each trajectory is the x-component of a 3D tracer path; the velocity at each step is drawn from fresh random Fourier modes, making the field delta-correlated in time (exact Kraichnan model).
+
+**Key exact result** (Falkovich, Gawedzki, Vergassola 2001): For the Kraichnan model, the tracer MSD scales as <x²(t)> ~ t^{xi} (anomalous diffusion with H = xi/2). The coarse-grained transport is governed by the fractional diffusion equation ∂_t P = -D_α(-∂²_x)^{α/2} P with **α = 2/xi**. This is the exact RG fixed point.
+
+**Note**: The current simulation uses N_k_modes=128 Fourier modes with amplitude scaling A(k) ~ k^{(1-xi)/2}. The velocity amplitudes may be insufficiently large to produce strong anomalous diffusion at the available trajectory lengths. Analysis should directly compute the MSD scaling exponent H from the data and compare to the theoretical prediction H = xi/2.
+
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi0p50_x.npy` — shape (200, 4001), xi=0.5, theory: H=0.25, α=4.0 (subdiffusion)
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi0p75_x.npy` — shape (200, 4001), xi=0.75, theory: H=0.375, α=2.67
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi1p00_x.npy` — shape (200, 4001), xi=1.0, theory: H=0.5, α=2.0 (normal diffusion)
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi1p50_x.npy` — shape (200, 4001), xi=1.5, theory: H=0.75, α=1.33 (superdiffusion, Lévy-like)
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi1p80_x.npy` — shape (200, 4001), xi=1.8, theory: H=0.9, α=1.11 (near-ballistic)
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_tgrid.npy` — shape (10001,), time grid [0, 100]
+
+Rows = independent trajectories, columns = time steps.
+
+**For the Kolmogorov case**: Physical turbulence has xi ≈ 5/3 ≈ 1.667, giving theoretical α = 2/xi ≈ 1.2. The xi=1.5 and xi=1.8 datasets bracket this value and can be interpolated.
+
+### 3. Kolmogorov-Spectrum Tracers (1D Synthetic Turbulence)
+
+Lagrangian tracer positions in a 1D synthetic turbulent velocity field with Kolmogorov E(k) ~ k^{-5/3} spectrum, synthesized from 64 random-phase Fourier modes. Time evolution: each Fourier mode decorrelates at its eddy turnover time tau_k ~ k^{-2/3}. Positions are displacements from initial position.
+
+- `/home/node/work/projects/levy_turbulence_v1/data/kolmogorov_kolmogorov_pure_disp.npy` — shape (150, 3001), pure K41 spectrum
+- `/home/node/work/projects/levy_turbulence_v1/data/kolmogorov_kolmogorov_multifractal_disp.npy` — shape (150, 3001), K41 + intermittency correction (beta model exponent -0.3)
+- `/home/node/work/projects/levy_turbulence_v1/data/kolmogorov_tgrid.npy` — shape (8001,), time grid [0, 400]
+
+### 4. Lorenz-96 Model (Deterministic Turbulence Analogue)
+
+Lorenz-96 system: dx_i/dt = (x_{i+1} - x_{i-2})·x_{i-1} - x_i + F with N=40 variables, F=8 (well-developed chaotic regime). Used as a deterministic turbulence analogue with known structure function statistics.
+
+- `/home/node/work/projects/levy_turbulence_v1/data/lorenz96_snapshots.npy` — shape (10000, 40), x_i(t) snapshots at dt=0.05
+- `/home/node/work/projects/levy_turbulence_v1/data/lorenz96_structure_functions.npy` — shape (6, 20), S_p(lag) for p=1..6, spatial lag=1..20
+
+S_2(1) ≈ 24.6 (from simulation). Lorenz-96 with F=8 is known to exhibit anomalous diffusion in the long-time limit.
+
+### 5. RG Flow Data
+
+Characteristic functions of Kraichnan xi=1.5 tracer displacements at multiple time lags, computed to observe the RG flow of the effective diffusion operator.
+
+- `/home/node/work/projects/levy_turbulence_v1/data/rg_char_func_kraichnan_xi1p5.npy` — shape (10, 200), φ(k,τ) at tau_idx=[1,5,20,50,100,200,500,1000,2000,5000]
+- `/home/node/work/projects/levy_turbulence_v1/data/rg_tau_values.npy` — shape (10,), time indices
+- `/home/node/work/projects/levy_turbulence_v1/data/rg_k_range.npy` — shape (200,), k values in [-2, 2]
+- `/home/node/work/projects/levy_turbulence_v1/data/rg_alpha_eff.npy` — shape (10,), pre-computed effective alpha (all ≈2.0 — needs reanalysis with better fitting)
+
+---
+
+## Key Theoretical Connections
+
+### Kraichnan RG Fixed Point (exact)
+For the Kraichnan model with E(k) ~ k^{1-xi}:
+- Scaling: <x²(t)> ~ t^{xi}, H = xi/2
+- Effective operator: (-∂²)^{α/2} with **α = 2/xi**
+- For K41 (xi = 5/3): **α_K41 ≈ 1.2** (close to but not exactly the half-Laplacian α=1)
+- For the half-Laplacian (α=1): requires xi=2 (maximally rough Kraichnan field)
+
+### Structure Function Connection (Eulerian → Lagrangian)
+From Taylor's hypothesis and the Kolmogorov refined similarity hypothesis:
+- Second-order structure function: S_2(r) ~ r^{zeta_2}
+- Energy spectrum: E(k) ~ k^{-(1+zeta_2)} → xi = 1 + zeta_2
+- K41: zeta_2 = 2/3, xi = 5/3, α = 6/5 = 1.2
+- With intermittency (She-Leveque): zeta_2 ≈ 0.696, xi ≈ 1.696, α ≈ 1.18
+
+### RG Argument Sketch
+Under coarse-graining (integrating out wavenumbers k > Λ):
+1. The tracer equation dx/dt = v(x,t) + noise renormalizes
+2. The velocity correlator <v(x)v(0)> ~ |x|^{xi-1} acts as a long-range noise
+3. By the generalized CLT, the accumulated displacement converges to α-stable with α = 2/xi
+4. The fixed-point equation is the fractional diffusion equation ∂_t P = -D_α(-∂²)^{α/2} P
+5. The RG flow: α(Λ) flows from 2 (at Λ=k_max, ballistic) to 2/xi (at Λ→0, diffusive limit)
+
+---
+
+## Suggested Analyses
+
+1. **Verify Kraichnan RG**: Compute MSD scaling exponent H for each xi dataset and test H = xi/2. Compute characteristic function and extract effective α(τ) as a function of time lag to show convergence to α = 2/xi.
+
+2. **Structure function scaling**: From cascade data, compute zeta_p(mu) for mu=0, 0.15, 0.28. Fit the log-normal formula zeta_p = p/3 - mu·p(p-3)/18. Extract xi = 1 + zeta_2 for each case.
+
+3. **Eulerian → Lagrangian mapping**: Connect the cascade zeta_2 to the Kraichnan xi, and verify that α = 2/xi = 2/(1+zeta_2) across all intermittency values.
+
+4. **RG flow**: Plot α_eff(τ) from the characteristic function data and fit the crossover from α≈2 (short times) to α=2/xi (long times). Extract the crossover time as a function of xi.
+
+5. **Kolmogorov prediction**: For the physical case xi=5/3, compute the predicted fractional exponent α=6/5=1.2. Test whether the kolmogorov_pure tracer data is consistent with this.
+
+6. **Intermittency correction**: Quantify how She-Leveque intermittency corrections shift xi and hence α away from the K41 prediction.
+
+7. **Effective operator identification**: For each dataset, test whether the large-time tracer PDF satisfies the fractional diffusion equation with α=2/xi by checking the characteristic function form φ(k,t) = exp(-D_α|k|^α·t).
+
+
+Ideas:
+Idea selected1: **Universal Scaling of Pair Dispersion**: Establish the renormalization group mapping between the Eulerian structure function exponent $\zeta_2$ and the pair-dispersion anomalous exponent $\alpha = 2/(1+\zeta_2)$. Use the provided pair-separation data to empirically demonstrate that the transition from ballistic to diffusive regimes is governed strictly by the Eulerian spectral roughness.
+Idea selected2: **Universal Scaling of Pair Dispersion**: Establish the renormalization group mapping between the Eulerian structure function exponent $\zeta_2$ and the pair-dispersion anomalous exponent $\alpha = 2/(1+\zeta_2)$. Use the provided pair-separation data to empirically demonstrate that the transition from ballistic to diffusive regimes is governed strictly by the Eulerian spectral roughness.
+Idea selected3: **Universal Scaling of Pair Dispersion**: Establish the renormalization group mapping between the Eulerian structure function exponent $\zeta_2$ and the pair-dispersion anomalous exponent $\alpha = 2/(1+\zeta_2)$. Use the provided pair-separation data to empirically demonstrate that the transition from ballistic to diffusive regimes is governed strictly by the Eulerian spectral roughness.
+
+
+
+Human feedback:
+The previous iteration failed because the simulation data did not correctly produce anomalous diffusion. We have now fixed the Kraichnan pair dispersion simulation using a shared velocity field. The key physical insight (Falkovich, Gawedzki, Vergassola 2001): in the Kraichnan model, PAIR DISPERSION (relative separation of two tracers) shows anomalous scaling with H=xi/2, directly related to the fractional Laplacian exponent alpha=2/xi. Single-particle diffusion is normal. The new data files kraichnan_xi*_pair_r2.npy contain mean squared pair separation vs time for xi=0.5,1.0,1.5,1.8 (6001 time points, T=60). The new idea should: (1) establish the exact RG argument connecting Eulerian roughness xi to the pair-dispersion fractional exponent alpha=2/xi, (2) verify this numerically from the pair_r2 data and cascade structure functions, (3) connect to K41 (xi=5/3, alpha=1.2) and She-Leveque intermittency corrections. Maximum 4 analysis steps.
+
+Take into account the human feedback when making your final selection. The feedback may indicate preferred research directions or specific constraints to consider.
+
+
+
+
+Respond in exactly the following format:
+
+\\begin{IDEA}
+<IDEA>
+\\end{IDEA}
+
+In <IDEA>, put the idea you have selected
+
+###### PROMPT ENDS ########
+
+###### RESPONSE [model: gemini-3.1-flash-lite-preview] ########
+\begin{IDEA}
+**Universal Scaling of Pair Dispersion**: Establish the renormalization group mapping between the Eulerian structure function exponent $\zeta_2$ and the pair-dispersion anomalous exponent $\alpha = 2/(1+\zeta_2)$. Use the provided pair-separation data to empirically demonstrate that the transition from ballistic to diffusive regimes is governed strictly by the Eulerian spectral roughness.
+\end{IDEA}
+
+
+###### PROMPT BEGINS ########
+Human: 
+**Role**: Skeptical Red Team Reviewer and Scientific Auditor.
+**Objective**: Conduct a rigorous "Stress Test" on the proposed research idea to identify fatal flaws, feasibility gaps, and potential scientific "slop."
+
+**Evaluation Criteria**:
+1. **Data-Hypothesis Alignment**: Does the dataset described actually contain the variables and precision required to test this idea?
+2. **Feasibility & Noise**: Is the signal-to-noise ratio realistic? Is the idea too ambitious for the provided data?
+3. **Redundancy Check**: Does this idea simply repeat a "standard" analysis, or is it a meaningful contribution?
+4. **Physical Reality**: Does the idea violate any constraints or physical laws mentioned in the data description?
+5. **Human Alignment**: Does the idea align with any human feedback or constraints provided?
+
+**Task**:
+- Critically analyze the "Current Idea" against the "Data Description."
+- If the idea is **unfeasible**, explicitly state why and suggest a "Strategic Pivot" (a new direction that *is* supported by the data).
+- If the idea is **feasible but weak**, identify the specific "weak links" in the logic.
+- Compare it against "Previous Ideas" to ensure the refinement loop is moving forward, not backward.
+
+**Operational Constraints**:
+- **Tone**: Be professional, objective, and intellectually demanding. 
+- **Brevity**: Use high-density bullet points. Do not waste words on pleasantries.
+- **Strict Adherence**: Every criticism must be grounded in the provided 'Data Description.'
+
+**Input Data**:
+- **Data Description**: 
+# Lévy Flights in High-Reynolds-Number Turbulence: Effective Physical Theory
+
+## Scientific Goal
+
+Discover the minimal effective physical theory underlying Lévy flights / anomalous diffusion (governed by the half-Laplacian and its generalization (-Δ)^{α/2}) in high-Reynolds-number turbulence. Specifically:
+
+1. **Eulerian angle**: What feature of the turbulent energy cascade (structure function scaling, multifractal spectrum, intermittency) determines the fractional Laplacian exponent α?
+2. **Lagrangian angle**: What is the physical mechanism by which turbulent velocity fields produce Lévy-stable tracer statistics?
+3. **Connection**: Can we derive a renormalization group (RG) argument connecting the Eulerian spectral exponent xi (roughness of the velocity field) to the Lagrangian fractional diffusion exponent α = 2/xi?
+4. **High-Re limit**: Does the effective fractional operator converge as Re → ∞, and what is the limiting α for Kolmogorov turbulence (xi = 5/3)?
+
+## Data Summary
+
+Four complementary datasets, covering Eulerian cascade statistics and Lagrangian tracer dynamics.
+
+---
+
+## File Inventory
+
+### 1. Random Multiplicative Energy Cascade (Eulerian, multifractal model)
+
+Simulates the turbulent energy cascade from large to small scales via log-normal random multipliers. At each cascade level l, the velocity increment scales as delta_u_l = u_0 * exp(sum_{j≤l} log(W_j) / 3) where W_j ~ LogNormal(-σ²/2, σ²) with σ² = μ·log(2) and μ is the intermittency parameter.
+
+**Note on data quality**: The structure function exponents zeta_p may need to be recomputed by the analysis code. The saved delta_u arrays contain the raw cascade realizations; structure functions S_p(r) = <|delta_u_l|^p> should be computed fresh from the raw data.
+
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_K41_delta_u.npy` — shape (5000, 20), μ=0.0 (pure K41, no intermittency). Expected: zeta_p = p/3.
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_logN_mild_delta_u.npy` — shape (5000, 20), μ=0.15 (mild intermittency). Expected: zeta_p = p/3 - μ·p(p-3)/18.
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_logN_realistic_delta_u.npy` — shape (5000, 20), μ=0.28 (realistic turbulence). Expected: zeta_p = p/3 - 0.28·p(p-3)/18.
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_K41_S_p.npy` — shape (6, 20), pre-computed S_p(l) for p=1..6 (may need recomputing).
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_r_scales.npy` — shape (20,), r_l = 2^{-l}.
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_zeta_p_K41.npy` — shape (6,), K41 predictions p/3.
+
+Cascade levels: l=0..19 (largest to smallest scale). Each row in delta_u is an independent realization. Each column is a cascade level.
+
+**Physics**: The energy spectrum E(k) ~ k^{-1-2h} where h = <log(W)/log(lambda)> = 1/3 for K41. The spectral roughness parameter xi = 1 + 2·zeta_2/2 = 1 + zeta_2 connects the cascade statistics to the Kraichnan model. For K41: xi = 5/3.
+
+### 2. Kraichnan Model — Lagrangian Tracers in Synthetic Turbulence
+
+Lagrangian tracer trajectories in a 3D Kraichnan velocity field (Gaussian, white-in-time, prescribed power-law spectrum E(k) ~ k^{1-xi}). Each trajectory is the x-component of a 3D tracer path; the velocity at each step is drawn from fresh random Fourier modes, making the field delta-correlated in time (exact Kraichnan model).
+
+**Key exact result** (Falkovich, Gawedzki, Vergassola 2001): For the Kraichnan model, the tracer MSD scales as <x²(t)> ~ t^{xi} (anomalous diffusion with H = xi/2). The coarse-grained transport is governed by the fractional diffusion equation ∂_t P = -D_α(-∂²_x)^{α/2} P with **α = 2/xi**. This is the exact RG fixed point.
+
+**Note**: The current simulation uses N_k_modes=128 Fourier modes with amplitude scaling A(k) ~ k^{(1-xi)/2}. The velocity amplitudes may be insufficiently large to produce strong anomalous diffusion at the available trajectory lengths. Analysis should directly compute the MSD scaling exponent H from the data and compare to the theoretical prediction H = xi/2.
+
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi0p50_x.npy` — shape (200, 4001), xi=0.5, theory: H=0.25, α=4.0 (subdiffusion)
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi0p75_x.npy` — shape (200, 4001), xi=0.75, theory: H=0.375, α=2.67
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi1p00_x.npy` — shape (200, 4001), xi=1.0, theory: H=0.5, α=2.0 (normal diffusion)
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi1p50_x.npy` — shape (200, 4001), xi=1.5, theory: H=0.75, α=1.33 (superdiffusion, Lévy-like)
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi1p80_x.npy` — shape (200, 4001), xi=1.8, theory: H=0.9, α=1.11 (near-ballistic)
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_tgrid.npy` — shape (10001,), time grid [0, 100]
+
+Rows = independent trajectories, columns = time steps.
+
+**For the Kolmogorov case**: Physical turbulence has xi ≈ 5/3 ≈ 1.667, giving theoretical α = 2/xi ≈ 1.2. The xi=1.5 and xi=1.8 datasets bracket this value and can be interpolated.
+
+### 3. Kolmogorov-Spectrum Tracers (1D Synthetic Turbulence)
+
+Lagrangian tracer positions in a 1D synthetic turbulent velocity field with Kolmogorov E(k) ~ k^{-5/3} spectrum, synthesized from 64 random-phase Fourier modes. Time evolution: each Fourier mode decorrelates at its eddy turnover time tau_k ~ k^{-2/3}. Positions are displacements from initial position.
+
+- `/home/node/work/projects/levy_turbulence_v1/data/kolmogorov_kolmogorov_pure_disp.npy` — shape (150, 3001), pure K41 spectrum
+- `/home/node/work/projects/levy_turbulence_v1/data/kolmogorov_kolmogorov_multifractal_disp.npy` — shape (150, 3001), K41 + intermittency correction (beta model exponent -0.3)
+- `/home/node/work/projects/levy_turbulence_v1/data/kolmogorov_tgrid.npy` — shape (8001,), time grid [0, 400]
+
+### 4. Lorenz-96 Model (Deterministic Turbulence Analogue)
+
+Lorenz-96 system: dx_i/dt = (x_{i+1} - x_{i-2})·x_{i-1} - x_i + F with N=40 variables, F=8 (well-developed chaotic regime). Used as a deterministic turbulence analogue with known structure function statistics.
+
+- `/home/node/work/projects/levy_turbulence_v1/data/lorenz96_snapshots.npy` — shape (10000, 40), x_i(t) snapshots at dt=0.05
+- `/home/node/work/projects/levy_turbulence_v1/data/lorenz96_structure_functions.npy` — shape (6, 20), S_p(lag) for p=1..6, spatial lag=1..20
+
+S_2(1) ≈ 24.6 (from simulation). Lorenz-96 with F=8 is known to exhibit anomalous diffusion in the long-time limit.
+
+### 5. RG Flow Data
+
+Characteristic functions of Kraichnan xi=1.5 tracer displacements at multiple time lags, computed to observe the RG flow of the effective diffusion operator.
+
+- `/home/node/work/projects/levy_turbulence_v1/data/rg_char_func_kraichnan_xi1p5.npy` — shape (10, 200), φ(k,τ) at tau_idx=[1,5,20,50,100,200,500,1000,2000,5000]
+- `/home/node/work/projects/levy_turbulence_v1/data/rg_tau_values.npy` — shape (10,), time indices
+- `/home/node/work/projects/levy_turbulence_v1/data/rg_k_range.npy` — shape (200,), k values in [-2, 2]
+- `/home/node/work/projects/levy_turbulence_v1/data/rg_alpha_eff.npy` — shape (10,), pre-computed effective alpha (all ≈2.0 — needs reanalysis with better fitting)
+
+---
+
+## Key Theoretical Connections
+
+### Kraichnan RG Fixed Point (exact)
+For the Kraichnan model with E(k) ~ k^{1-xi}:
+- Scaling: <x²(t)> ~ t^{xi}, H = xi/2
+- Effective operator: (-∂²)^{α/2} with **α = 2/xi**
+- For K41 (xi = 5/3): **α_K41 ≈ 1.2** (close to but not exactly the half-Laplacian α=1)
+- For the half-Laplacian (α=1): requires xi=2 (maximally rough Kraichnan field)
+
+### Structure Function Connection (Eulerian → Lagrangian)
+From Taylor's hypothesis and the Kolmogorov refined similarity hypothesis:
+- Second-order structure function: S_2(r) ~ r^{zeta_2}
+- Energy spectrum: E(k) ~ k^{-(1+zeta_2)} → xi = 1 + zeta_2
+- K41: zeta_2 = 2/3, xi = 5/3, α = 6/5 = 1.2
+- With intermittency (She-Leveque): zeta_2 ≈ 0.696, xi ≈ 1.696, α ≈ 1.18
+
+### RG Argument Sketch
+Under coarse-graining (integrating out wavenumbers k > Λ):
+1. The tracer equation dx/dt = v(x,t) + noise renormalizes
+2. The velocity correlator <v(x)v(0)> ~ |x|^{xi-1} acts as a long-range noise
+3. By the generalized CLT, the accumulated displacement converges to α-stable with α = 2/xi
+4. The fixed-point equation is the fractional diffusion equation ∂_t P = -D_α(-∂²)^{α/2} P
+5. The RG flow: α(Λ) flows from 2 (at Λ=k_max, ballistic) to 2/xi (at Λ→0, diffusive limit)
+
+---
+
+## Suggested Analyses
+
+1. **Verify Kraichnan RG**: Compute MSD scaling exponent H for each xi dataset and test H = xi/2. Compute characteristic function and extract effective α(τ) as a function of time lag to show convergence to α = 2/xi.
+
+2. **Structure function scaling**: From cascade data, compute zeta_p(mu) for mu=0, 0.15, 0.28. Fit the log-normal formula zeta_p = p/3 - mu·p(p-3)/18. Extract xi = 1 + zeta_2 for each case.
+
+3. **Eulerian → Lagrangian mapping**: Connect the cascade zeta_2 to the Kraichnan xi, and verify that α = 2/xi = 2/(1+zeta_2) across all intermittency values.
+
+4. **RG flow**: Plot α_eff(τ) from the characteristic function data and fit the crossover from α≈2 (short times) to α=2/xi (long times). Extract the crossover time as a function of xi.
+
+5. **Kolmogorov prediction**: For the physical case xi=5/3, compute the predicted fractional exponent α=6/5=1.2. Test whether the kolmogorov_pure tracer data is consistent with this.
+
+6. **Intermittency correction**: Quantify how She-Leveque intermittency corrections shift xi and hence α away from the K41 prediction.
+
+7. **Effective operator identification**: For each dataset, test whether the large-time tracer PDF satisfies the fractional diffusion equation with α=2/xi by checking the characteristic function form φ(k,t) = exp(-D_α|k|^α·t).
+
+- **Current Idea**: **Universal Scaling of Pair Dispersion**: Establish the renormalization group mapping between the Eulerian structure function exponent $\zeta_2$ and the pair-dispersion anomalous exponent $\alpha = 2/(1+\zeta_2)$. Use the provided pair-separation data to empirically demonstrate that the transition from ballistic to diffusive regimes is governed strictly by the Eulerian spectral roughness.
+- **Human Feedback**: The previous iteration failed because the simulation data did not correctly produce anomalous diffusion. We have now fixed the Kraichnan pair dispersion simulation using a shared velocity field. The key physical insight (Falkovich, Gawedzki, Vergassola 2001): in the Kraichnan model, PAIR DISPERSION (relative separation of two tracers) shows anomalous scaling with H=xi/2, directly related to the fractional Laplacian exponent alpha=2/xi. Single-particle diffusion is normal. The new data files kraichnan_xi*_pair_r2.npy contain mean squared pair separation vs time for xi=0.5,1.0,1.5,1.8 (6001 time points, T=60). The new idea should: (1) establish the exact RG argument connecting Eulerian roughness xi to the pair-dispersion fractional exponent alpha=2/xi, (2) verify this numerically from the pair_r2 data and cascade structure functions, (3) connect to K41 (xi=5/3, alpha=1.2) and She-Leveque intermittency corrections. Maximum 4 analysis steps.    
+
+Respond in the following format:
+
+\\begin{CRITIC}
+<CRITIC>
+\\end{CRITIC}
+
+In <CRITIC>, put your criticism to the idea. Try to be brief in the description.
+
+###### PROMPT ENDS ########
+
+###### RESPONSE [model: gemini-3.1-flash-lite-preview] ########
+\begin{CRITIC}
+*   **Data-Hypothesis Mismatch**: The "Current Idea" proposes using `pair_r2.npy` files, but these files are **not listed** in the provided File Inventory. The inventory only contains single-tracer `kraichnan_xi*_x.npy` files. You cannot perform a pair-dispersion analysis without the corresponding data.
+*   **Logical Weak Link**: The proposal assumes a direct mapping between single-particle Lagrangian statistics and pair-dispersion scaling. While related, they are distinct physical processes. The Kraichnan model's anomalous scaling is specifically a property of *relative* separation; single-particle displacement in a white-in-time Kraichnan field is typically diffusive (normal) unless specific constraints are met.
+*   **Feasibility Gap**: The "RG flow" data (`rg_char_func_kraichnan_xi1p5.npy`) shows $\alpha_{eff} \approx 2.0$. If the data is already failing to show anomalous diffusion at the characteristic function level, the proposed "universal scaling" verification is premature.
+*   **Strategic Pivot**: 
+    1.  **Validate Data First**: Abandon the "pair dispersion" claim until the existence of the `pair_r2.npy` files is confirmed or the analysis is restricted to the available single-tracer `kraichnan_xi*_x.npy` data.
+    2.  **Refocus on Single-Particle Anomalies**: Use the `kraichnan_xi*_x.npy` data to compute the MSD exponent $H$ and verify if $H = \xi/2$ holds for single particles in your specific simulation setup.
+    3.  **Re-analyze RG Flow**: Perform a rigorous fit of the `rg_char_func` data using a Lévy-stable distribution model $\phi(k,t) = \exp(-D|k|^\alpha t)$ to extract $\alpha$ as a function of $\tau$, rather than relying on the pre-computed (and noted as faulty) `rg_alpha_eff.npy`.
+    4.  **Intermittency Sensitivity**: Use the `kolmogorov_multifractal_disp.npy` to quantify the deviation of $\alpha$ from the K41 prediction ($1.2$) to determine if intermittency is a first-order correction to the fractional operator.
+\end{CRITIC}
+
+
+###### PROMPT BEGINS ########
+Human: 
+**Role**: Senior Research Scientific.
+**Objective**: Synthesize a primary research idea with expert criticism to produce a refined, groundbreaking, and technically feasible scientific objective.
+
+**Task**:
+You are in an iterative refinement loop (Iteration: 0). Your goal is to take the "Previous Idea," pass it through the filter of the "Critiques," and produce a "Hardened Idea" that is more scientifically rigorous and original than its predecessor.
+
+**Refinement Principles**:
+1. **Address Caveats**: If the critic mentioned a lack of feasibility, adjust the scope of the idea to fit the 'Data Description.'
+2. **Increase Specificity**: Move away from generic goals. Use the statistics and variables found in the data description to make the idea more concrete.
+3. **Internalize Feedback**: Do not explicitly mention the criticism or explain your changes. Instead, weave the solutions directly into the new version of the idea.
+4. **Human Guidance**: Incorporate any human feedback provided, ensuring the refined idea aligns with human preferences and constraints.
+5. **Maintain Grounding**: Ensure the "groundbreaking" aspect remains physically possible within the provided dataset's constraints.
+
+**Operational Constraints**:
+- **Brevity**: Keep the description concise but high-density (max 6 sentences).
+- **Format**: Do not include introductory text or meta-commentary about the process.
+- **Fidelity**: Stick strictly to the guidelines and physical realities described in the data description.
+- The idea must contain a title and a description of the idea
+
+**Input Data**:
+- **Data Description**: 
+# Lévy Flights in High-Reynolds-Number Turbulence: Effective Physical Theory
+
+## Scientific Goal
+
+Discover the minimal effective physical theory underlying Lévy flights / anomalous diffusion (governed by the half-Laplacian and its generalization (-Δ)^{α/2}) in high-Reynolds-number turbulence. Specifically:
+
+1. **Eulerian angle**: What feature of the turbulent energy cascade (structure function scaling, multifractal spectrum, intermittency) determines the fractional Laplacian exponent α?
+2. **Lagrangian angle**: What is the physical mechanism by which turbulent velocity fields produce Lévy-stable tracer statistics?
+3. **Connection**: Can we derive a renormalization group (RG) argument connecting the Eulerian spectral exponent xi (roughness of the velocity field) to the Lagrangian fractional diffusion exponent α = 2/xi?
+4. **High-Re limit**: Does the effective fractional operator converge as Re → ∞, and what is the limiting α for Kolmogorov turbulence (xi = 5/3)?
+
+## Data Summary
+
+Four complementary datasets, covering Eulerian cascade statistics and Lagrangian tracer dynamics.
+
+---
+
+## File Inventory
+
+### 1. Random Multiplicative Energy Cascade (Eulerian, multifractal model)
+
+Simulates the turbulent energy cascade from large to small scales via log-normal random multipliers. At each cascade level l, the velocity increment scales as delta_u_l = u_0 * exp(sum_{j≤l} log(W_j) / 3) where W_j ~ LogNormal(-σ²/2, σ²) with σ² = μ·log(2) and μ is the intermittency parameter.
+
+**Note on data quality**: The structure function exponents zeta_p may need to be recomputed by the analysis code. The saved delta_u arrays contain the raw cascade realizations; structure functions S_p(r) = <|delta_u_l|^p> should be computed fresh from the raw data.
+
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_K41_delta_u.npy` — shape (5000, 20), μ=0.0 (pure K41, no intermittency). Expected: zeta_p = p/3.
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_logN_mild_delta_u.npy` — shape (5000, 20), μ=0.15 (mild intermittency). Expected: zeta_p = p/3 - μ·p(p-3)/18.
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_logN_realistic_delta_u.npy` — shape (5000, 20), μ=0.28 (realistic turbulence). Expected: zeta_p = p/3 - 0.28·p(p-3)/18.
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_K41_S_p.npy` — shape (6, 20), pre-computed S_p(l) for p=1..6 (may need recomputing).
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_r_scales.npy` — shape (20,), r_l = 2^{-l}.
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_zeta_p_K41.npy` — shape (6,), K41 predictions p/3.
+
+Cascade levels: l=0..19 (largest to smallest scale). Each row in delta_u is an independent realization. Each column is a cascade level.
+
+**Physics**: The energy spectrum E(k) ~ k^{-1-2h} where h = <log(W)/log(lambda)> = 1/3 for K41. The spectral roughness parameter xi = 1 + 2·zeta_2/2 = 1 + zeta_2 connects the cascade statistics to the Kraichnan model. For K41: xi = 5/3.
+
+### 2. Kraichnan Model — Lagrangian Tracers in Synthetic Turbulence
+
+Lagrangian tracer trajectories in a 3D Kraichnan velocity field (Gaussian, white-in-time, prescribed power-law spectrum E(k) ~ k^{1-xi}). Each trajectory is the x-component of a 3D tracer path; the velocity at each step is drawn from fresh random Fourier modes, making the field delta-correlated in time (exact Kraichnan model).
+
+**Key exact result** (Falkovich, Gawedzki, Vergassola 2001): For the Kraichnan model, the tracer MSD scales as <x²(t)> ~ t^{xi} (anomalous diffusion with H = xi/2). The coarse-grained transport is governed by the fractional diffusion equation ∂_t P = -D_α(-∂²_x)^{α/2} P with **α = 2/xi**. This is the exact RG fixed point.
+
+**Note**: The current simulation uses N_k_modes=128 Fourier modes with amplitude scaling A(k) ~ k^{(1-xi)/2}. The velocity amplitudes may be insufficiently large to produce strong anomalous diffusion at the available trajectory lengths. Analysis should directly compute the MSD scaling exponent H from the data and compare to the theoretical prediction H = xi/2.
+
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi0p50_x.npy` — shape (200, 4001), xi=0.5, theory: H=0.25, α=4.0 (subdiffusion)
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi0p75_x.npy` — shape (200, 4001), xi=0.75, theory: H=0.375, α=2.67
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi1p00_x.npy` — shape (200, 4001), xi=1.0, theory: H=0.5, α=2.0 (normal diffusion)
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi1p50_x.npy` — shape (200, 4001), xi=1.5, theory: H=0.75, α=1.33 (superdiffusion, Lévy-like)
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi1p80_x.npy` — shape (200, 4001), xi=1.8, theory: H=0.9, α=1.11 (near-ballistic)
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_tgrid.npy` — shape (10001,), time grid [0, 100]
+
+Rows = independent trajectories, columns = time steps.
+
+**For the Kolmogorov case**: Physical turbulence has xi ≈ 5/3 ≈ 1.667, giving theoretical α = 2/xi ≈ 1.2. The xi=1.5 and xi=1.8 datasets bracket this value and can be interpolated.
+
+### 3. Kolmogorov-Spectrum Tracers (1D Synthetic Turbulence)
+
+Lagrangian tracer positions in a 1D synthetic turbulent velocity field with Kolmogorov E(k) ~ k^{-5/3} spectrum, synthesized from 64 random-phase Fourier modes. Time evolution: each Fourier mode decorrelates at its eddy turnover time tau_k ~ k^{-2/3}. Positions are displacements from initial position.
+
+- `/home/node/work/projects/levy_turbulence_v1/data/kolmogorov_kolmogorov_pure_disp.npy` — shape (150, 3001), pure K41 spectrum
+- `/home/node/work/projects/levy_turbulence_v1/data/kolmogorov_kolmogorov_multifractal_disp.npy` — shape (150, 3001), K41 + intermittency correction (beta model exponent -0.3)
+- `/home/node/work/projects/levy_turbulence_v1/data/kolmogorov_tgrid.npy` — shape (8001,), time grid [0, 400]
+
+### 4. Lorenz-96 Model (Deterministic Turbulence Analogue)
+
+Lorenz-96 system: dx_i/dt = (x_{i+1} - x_{i-2})·x_{i-1} - x_i + F with N=40 variables, F=8 (well-developed chaotic regime). Used as a deterministic turbulence analogue with known structure function statistics.
+
+- `/home/node/work/projects/levy_turbulence_v1/data/lorenz96_snapshots.npy` — shape (10000, 40), x_i(t) snapshots at dt=0.05
+- `/home/node/work/projects/levy_turbulence_v1/data/lorenz96_structure_functions.npy` — shape (6, 20), S_p(lag) for p=1..6, spatial lag=1..20
+
+S_2(1) ≈ 24.6 (from simulation). Lorenz-96 with F=8 is known to exhibit anomalous diffusion in the long-time limit.
+
+### 5. RG Flow Data
+
+Characteristic functions of Kraichnan xi=1.5 tracer displacements at multiple time lags, computed to observe the RG flow of the effective diffusion operator.
+
+- `/home/node/work/projects/levy_turbulence_v1/data/rg_char_func_kraichnan_xi1p5.npy` — shape (10, 200), φ(k,τ) at tau_idx=[1,5,20,50,100,200,500,1000,2000,5000]
+- `/home/node/work/projects/levy_turbulence_v1/data/rg_tau_values.npy` — shape (10,), time indices
+- `/home/node/work/projects/levy_turbulence_v1/data/rg_k_range.npy` — shape (200,), k values in [-2, 2]
+- `/home/node/work/projects/levy_turbulence_v1/data/rg_alpha_eff.npy` — shape (10,), pre-computed effective alpha (all ≈2.0 — needs reanalysis with better fitting)
+
+---
+
+## Key Theoretical Connections
+
+### Kraichnan RG Fixed Point (exact)
+For the Kraichnan model with E(k) ~ k^{1-xi}:
+- Scaling: <x²(t)> ~ t^{xi}, H = xi/2
+- Effective operator: (-∂²)^{α/2} with **α = 2/xi**
+- For K41 (xi = 5/3): **α_K41 ≈ 1.2** (close to but not exactly the half-Laplacian α=1)
+- For the half-Laplacian (α=1): requires xi=2 (maximally rough Kraichnan field)
+
+### Structure Function Connection (Eulerian → Lagrangian)
+From Taylor's hypothesis and the Kolmogorov refined similarity hypothesis:
+- Second-order structure function: S_2(r) ~ r^{zeta_2}
+- Energy spectrum: E(k) ~ k^{-(1+zeta_2)} → xi = 1 + zeta_2
+- K41: zeta_2 = 2/3, xi = 5/3, α = 6/5 = 1.2
+- With intermittency (She-Leveque): zeta_2 ≈ 0.696, xi ≈ 1.696, α ≈ 1.18
+
+### RG Argument Sketch
+Under coarse-graining (integrating out wavenumbers k > Λ):
+1. The tracer equation dx/dt = v(x,t) + noise renormalizes
+2. The velocity correlator <v(x)v(0)> ~ |x|^{xi-1} acts as a long-range noise
+3. By the generalized CLT, the accumulated displacement converges to α-stable with α = 2/xi
+4. The fixed-point equation is the fractional diffusion equation ∂_t P = -D_α(-∂²)^{α/2} P
+5. The RG flow: α(Λ) flows from 2 (at Λ=k_max, ballistic) to 2/xi (at Λ→0, diffusive limit)
+
+---
+
+## Suggested Analyses
+
+1. **Verify Kraichnan RG**: Compute MSD scaling exponent H for each xi dataset and test H = xi/2. Compute characteristic function and extract effective α(τ) as a function of time lag to show convergence to α = 2/xi.
+
+2. **Structure function scaling**: From cascade data, compute zeta_p(mu) for mu=0, 0.15, 0.28. Fit the log-normal formula zeta_p = p/3 - mu·p(p-3)/18. Extract xi = 1 + zeta_2 for each case.
+
+3. **Eulerian → Lagrangian mapping**: Connect the cascade zeta_2 to the Kraichnan xi, and verify that α = 2/xi = 2/(1+zeta_2) across all intermittency values.
+
+4. **RG flow**: Plot α_eff(τ) from the characteristic function data and fit the crossover from α≈2 (short times) to α=2/xi (long times). Extract the crossover time as a function of xi.
+
+5. **Kolmogorov prediction**: For the physical case xi=5/3, compute the predicted fractional exponent α=6/5=1.2. Test whether the kolmogorov_pure tracer data is consistent with this.
+
+6. **Intermittency correction**: Quantify how She-Leveque intermittency corrections shift xi and hence α away from the K41 prediction.
+
+7. **Effective operator identification**: For each dataset, test whether the large-time tracer PDF satisfies the fractional diffusion equation with α=2/xi by checking the characteristic function form φ(k,t) = exp(-D_α|k|^α·t).
+
+- **Critical Feedback**: *   **Data-Hypothesis Mismatch**: The "Current Idea" proposes using `pair_r2.npy` files, but these files are **not listed** in the provided File Inventory. The inventory only contains single-tracer `kraichnan_xi*_x.npy` files. You cannot perform a pair-dispersion analysis without the corresponding data.
+*   **Logical Weak Link**: The proposal assumes a direct mapping between single-particle Lagrangian statistics and pair-dispersion scaling. While related, they are distinct physical processes. The Kraichnan model's anomalous scaling is specifically a property of *relative* separation; single-particle displacement in a white-in-time Kraichnan field is typically diffusive (normal) unless specific constraints are met.
+*   **Feasibility Gap**: The "RG flow" data (`rg_char_func_kraichnan_xi1p5.npy`) shows $\alpha_{eff} \approx 2.0$. If the data is already failing to show anomalous diffusion at the characteristic function level, the proposed "universal scaling" verification is premature.
+*   **Strategic Pivot**: 
+    1.  **Validate Data First**: Abandon the "pair dispersion" claim until the existence of the `pair_r2.npy` files is confirmed or the analysis is restricted to the available single-tracer `kraichnan_xi*_x.npy` data.
+    2.  **Refocus on Single-Particle Anomalies**: Use the `kraichnan_xi*_x.npy` data to compute the MSD exponent $H$ and verify if $H = \xi/2$ holds for single particles in your specific simulation setup.
+    3.  **Re-analyze RG Flow**: Perform a rigorous fit of the `rg_char_func` data using a Lévy-stable distribution model $\phi(k,t) = \exp(-D|k|^\alpha t)$ to extract $\alpha$ as a function of $\tau$, rather than relying on the pre-computed (and noted as faulty) `rg_alpha_eff.npy`.
+    4.  **Intermittency Sensitivity**: Use the `kolmogorov_multifractal_disp.npy` to quantify the deviation of $\alpha$ from the K41 prediction ($1.2$) to determine if intermittency is a first-order correction to the fractional operator.
+- **Human Feedback**: The previous iteration failed because the simulation data did not correctly produce anomalous diffusion. We have now fixed the Kraichnan pair dispersion simulation using a shared velocity field. The key physical insight (Falkovich, Gawedzki, Vergassola 2001): in the Kraichnan model, PAIR DISPERSION (relative separation of two tracers) shows anomalous scaling with H=xi/2, directly related to the fractional Laplacian exponent alpha=2/xi. Single-particle diffusion is normal. The new data files kraichnan_xi*_pair_r2.npy contain mean squared pair separation vs time for xi=0.5,1.0,1.5,1.8 (6001 time points, T=60). The new idea should: (1) establish the exact RG argument connecting Eulerian roughness xi to the pair-dispersion fractional exponent alpha=2/xi, (2) verify this numerically from the pair_r2 data and cascade structure functions, (3) connect to K41 (xi=5/3, alpha=1.2) and She-Leveque intermittency corrections. Maximum 4 analysis steps.
+
+Respond in the following format:
+
+\\begin{IDEA}
+<IDEA>
+\\end{IDEA}
+
+In <IDEA>, put the refined idea. 
+
+###### PROMPT ENDS ########
+
+###### RESPONSE [model: gemini-3.1-flash-lite-preview] ########
+\begin{IDEA}
+**Title**: Renormalization Group Mapping of Turbulent Pair Dispersion to Fractional Lévy Dynamics
+
+**Description**: 
+This study establishes the exact mapping between Eulerian velocity cascade intermittency and Lagrangian pair-dispersion anomalous diffusion. We will verify the RG fixed-point relation $\alpha = 2/\xi$ by calculating $\xi = 1 + \zeta_2$ from the log-normal cascade structure functions ($\mu=0, 0.15, 0.28$) and comparing these against the MSD scaling exponent $H = \xi/2$ derived from the `kraichnan_xi*_pair_r2.npy` datasets. We will quantify the departure from the K41 prediction ($\alpha \approx 1.2$) by incorporating She-Leveque intermittency corrections to the spectral roughness $\xi$, determining if these corrections constitute a first-order shift in the effective fractional operator. Finally, we will validate the fractional diffusion equation $\partial_t P = -D_\alpha(-\Delta)^{\alpha/2} P$ by fitting the characteristic functions of pair separations to confirm the convergence of the Lévy-stable exponent $\alpha$ in the high-Reynolds-number limit. This confirms whether the fractional Laplacian is a universal generator of turbulent pair-dispersion statistics across varying degrees of multifractal intermittency.
+\end{IDEA}
+
+
+###### PROMPT BEGINS ########
+Human: 
+**Role**: Skeptical Red Team Reviewer and Scientific Auditor.
+**Objective**: Conduct a rigorous "Stress Test" on the proposed research idea to identify fatal flaws, feasibility gaps, and potential scientific "slop."
+
+**Evaluation Criteria**:
+1. **Data-Hypothesis Alignment**: Does the dataset described actually contain the variables and precision required to test this idea?
+2. **Feasibility & Noise**: Is the signal-to-noise ratio realistic? Is the idea too ambitious for the provided data?
+3. **Redundancy Check**: Does this idea simply repeat a "standard" analysis, or is it a meaningful contribution?
+4. **Physical Reality**: Does the idea violate any constraints or physical laws mentioned in the data description?
+5. **Human Alignment**: Does the idea align with any human feedback or constraints provided?
+
+**Task**:
+- Critically analyze the "Current Idea" against the "Data Description."
+- If the idea is **unfeasible**, explicitly state why and suggest a "Strategic Pivot" (a new direction that *is* supported by the data).
+- If the idea is **feasible but weak**, identify the specific "weak links" in the logic.
+- Compare it against "Previous Ideas" to ensure the refinement loop is moving forward, not backward.
+
+**Operational Constraints**:
+- **Tone**: Be professional, objective, and intellectually demanding. 
+- **Brevity**: Use high-density bullet points. Do not waste words on pleasantries.
+- **Strict Adherence**: Every criticism must be grounded in the provided 'Data Description.'
+
+**Input Data**:
+- **Data Description**: 
+# Lévy Flights in High-Reynolds-Number Turbulence: Effective Physical Theory
+
+## Scientific Goal
+
+Discover the minimal effective physical theory underlying Lévy flights / anomalous diffusion (governed by the half-Laplacian and its generalization (-Δ)^{α/2}) in high-Reynolds-number turbulence. Specifically:
+
+1. **Eulerian angle**: What feature of the turbulent energy cascade (structure function scaling, multifractal spectrum, intermittency) determines the fractional Laplacian exponent α?
+2. **Lagrangian angle**: What is the physical mechanism by which turbulent velocity fields produce Lévy-stable tracer statistics?
+3. **Connection**: Can we derive a renormalization group (RG) argument connecting the Eulerian spectral exponent xi (roughness of the velocity field) to the Lagrangian fractional diffusion exponent α = 2/xi?
+4. **High-Re limit**: Does the effective fractional operator converge as Re → ∞, and what is the limiting α for Kolmogorov turbulence (xi = 5/3)?
+
+## Data Summary
+
+Four complementary datasets, covering Eulerian cascade statistics and Lagrangian tracer dynamics.
+
+---
+
+## File Inventory
+
+### 1. Random Multiplicative Energy Cascade (Eulerian, multifractal model)
+
+Simulates the turbulent energy cascade from large to small scales via log-normal random multipliers. At each cascade level l, the velocity increment scales as delta_u_l = u_0 * exp(sum_{j≤l} log(W_j) / 3) where W_j ~ LogNormal(-σ²/2, σ²) with σ² = μ·log(2) and μ is the intermittency parameter.
+
+**Note on data quality**: The structure function exponents zeta_p may need to be recomputed by the analysis code. The saved delta_u arrays contain the raw cascade realizations; structure functions S_p(r) = <|delta_u_l|^p> should be computed fresh from the raw data.
+
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_K41_delta_u.npy` — shape (5000, 20), μ=0.0 (pure K41, no intermittency). Expected: zeta_p = p/3.
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_logN_mild_delta_u.npy` — shape (5000, 20), μ=0.15 (mild intermittency). Expected: zeta_p = p/3 - μ·p(p-3)/18.
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_logN_realistic_delta_u.npy` — shape (5000, 20), μ=0.28 (realistic turbulence). Expected: zeta_p = p/3 - 0.28·p(p-3)/18.
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_K41_S_p.npy` — shape (6, 20), pre-computed S_p(l) for p=1..6 (may need recomputing).
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_r_scales.npy` — shape (20,), r_l = 2^{-l}.
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_zeta_p_K41.npy` — shape (6,), K41 predictions p/3.
+
+Cascade levels: l=0..19 (largest to smallest scale). Each row in delta_u is an independent realization. Each column is a cascade level.
+
+**Physics**: The energy spectrum E(k) ~ k^{-1-2h} where h = <log(W)/log(lambda)> = 1/3 for K41. The spectral roughness parameter xi = 1 + 2·zeta_2/2 = 1 + zeta_2 connects the cascade statistics to the Kraichnan model. For K41: xi = 5/3.
+
+### 2. Kraichnan Model — Lagrangian Tracers in Synthetic Turbulence
+
+Lagrangian tracer trajectories in a 3D Kraichnan velocity field (Gaussian, white-in-time, prescribed power-law spectrum E(k) ~ k^{1-xi}). Each trajectory is the x-component of a 3D tracer path; the velocity at each step is drawn from fresh random Fourier modes, making the field delta-correlated in time (exact Kraichnan model).
+
+**Key exact result** (Falkovich, Gawedzki, Vergassola 2001): For the Kraichnan model, the tracer MSD scales as <x²(t)> ~ t^{xi} (anomalous diffusion with H = xi/2). The coarse-grained transport is governed by the fractional diffusion equation ∂_t P = -D_α(-∂²_x)^{α/2} P with **α = 2/xi**. This is the exact RG fixed point.
+
+**Note**: The current simulation uses N_k_modes=128 Fourier modes with amplitude scaling A(k) ~ k^{(1-xi)/2}. The velocity amplitudes may be insufficiently large to produce strong anomalous diffusion at the available trajectory lengths. Analysis should directly compute the MSD scaling exponent H from the data and compare to the theoretical prediction H = xi/2.
+
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi0p50_x.npy` — shape (200, 4001), xi=0.5, theory: H=0.25, α=4.0 (subdiffusion)
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi0p75_x.npy` — shape (200, 4001), xi=0.75, theory: H=0.375, α=2.67
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi1p00_x.npy` — shape (200, 4001), xi=1.0, theory: H=0.5, α=2.0 (normal diffusion)
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi1p50_x.npy` — shape (200, 4001), xi=1.5, theory: H=0.75, α=1.33 (superdiffusion, Lévy-like)
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi1p80_x.npy` — shape (200, 4001), xi=1.8, theory: H=0.9, α=1.11 (near-ballistic)
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_tgrid.npy` — shape (10001,), time grid [0, 100]
+
+Rows = independent trajectories, columns = time steps.
+
+**For the Kolmogorov case**: Physical turbulence has xi ≈ 5/3 ≈ 1.667, giving theoretical α = 2/xi ≈ 1.2. The xi=1.5 and xi=1.8 datasets bracket this value and can be interpolated.
+
+### 3. Kolmogorov-Spectrum Tracers (1D Synthetic Turbulence)
+
+Lagrangian tracer positions in a 1D synthetic turbulent velocity field with Kolmogorov E(k) ~ k^{-5/3} spectrum, synthesized from 64 random-phase Fourier modes. Time evolution: each Fourier mode decorrelates at its eddy turnover time tau_k ~ k^{-2/3}. Positions are displacements from initial position.
+
+- `/home/node/work/projects/levy_turbulence_v1/data/kolmogorov_kolmogorov_pure_disp.npy` — shape (150, 3001), pure K41 spectrum
+- `/home/node/work/projects/levy_turbulence_v1/data/kolmogorov_kolmogorov_multifractal_disp.npy` — shape (150, 3001), K41 + intermittency correction (beta model exponent -0.3)
+- `/home/node/work/projects/levy_turbulence_v1/data/kolmogorov_tgrid.npy` — shape (8001,), time grid [0, 400]
+
+### 4. Lorenz-96 Model (Deterministic Turbulence Analogue)
+
+Lorenz-96 system: dx_i/dt = (x_{i+1} - x_{i-2})·x_{i-1} - x_i + F with N=40 variables, F=8 (well-developed chaotic regime). Used as a deterministic turbulence analogue with known structure function statistics.
+
+- `/home/node/work/projects/levy_turbulence_v1/data/lorenz96_snapshots.npy` — shape (10000, 40), x_i(t) snapshots at dt=0.05
+- `/home/node/work/projects/levy_turbulence_v1/data/lorenz96_structure_functions.npy` — shape (6, 20), S_p(lag) for p=1..6, spatial lag=1..20
+
+S_2(1) ≈ 24.6 (from simulation). Lorenz-96 with F=8 is known to exhibit anomalous diffusion in the long-time limit.
+
+### 5. RG Flow Data
+
+Characteristic functions of Kraichnan xi=1.5 tracer displacements at multiple time lags, computed to observe the RG flow of the effective diffusion operator.
+
+- `/home/node/work/projects/levy_turbulence_v1/data/rg_char_func_kraichnan_xi1p5.npy` — shape (10, 200), φ(k,τ) at tau_idx=[1,5,20,50,100,200,500,1000,2000,5000]
+- `/home/node/work/projects/levy_turbulence_v1/data/rg_tau_values.npy` — shape (10,), time indices
+- `/home/node/work/projects/levy_turbulence_v1/data/rg_k_range.npy` — shape (200,), k values in [-2, 2]
+- `/home/node/work/projects/levy_turbulence_v1/data/rg_alpha_eff.npy` — shape (10,), pre-computed effective alpha (all ≈2.0 — needs reanalysis with better fitting)
+
+---
+
+## Key Theoretical Connections
+
+### Kraichnan RG Fixed Point (exact)
+For the Kraichnan model with E(k) ~ k^{1-xi}:
+- Scaling: <x²(t)> ~ t^{xi}, H = xi/2
+- Effective operator: (-∂²)^{α/2} with **α = 2/xi**
+- For K41 (xi = 5/3): **α_K41 ≈ 1.2** (close to but not exactly the half-Laplacian α=1)
+- For the half-Laplacian (α=1): requires xi=2 (maximally rough Kraichnan field)
+
+### Structure Function Connection (Eulerian → Lagrangian)
+From Taylor's hypothesis and the Kolmogorov refined similarity hypothesis:
+- Second-order structure function: S_2(r) ~ r^{zeta_2}
+- Energy spectrum: E(k) ~ k^{-(1+zeta_2)} → xi = 1 + zeta_2
+- K41: zeta_2 = 2/3, xi = 5/3, α = 6/5 = 1.2
+- With intermittency (She-Leveque): zeta_2 ≈ 0.696, xi ≈ 1.696, α ≈ 1.18
+
+### RG Argument Sketch
+Under coarse-graining (integrating out wavenumbers k > Λ):
+1. The tracer equation dx/dt = v(x,t) + noise renormalizes
+2. The velocity correlator <v(x)v(0)> ~ |x|^{xi-1} acts as a long-range noise
+3. By the generalized CLT, the accumulated displacement converges to α-stable with α = 2/xi
+4. The fixed-point equation is the fractional diffusion equation ∂_t P = -D_α(-∂²)^{α/2} P
+5. The RG flow: α(Λ) flows from 2 (at Λ=k_max, ballistic) to 2/xi (at Λ→0, diffusive limit)
+
+---
+
+## Suggested Analyses
+
+1. **Verify Kraichnan RG**: Compute MSD scaling exponent H for each xi dataset and test H = xi/2. Compute characteristic function and extract effective α(τ) as a function of time lag to show convergence to α = 2/xi.
+
+2. **Structure function scaling**: From cascade data, compute zeta_p(mu) for mu=0, 0.15, 0.28. Fit the log-normal formula zeta_p = p/3 - mu·p(p-3)/18. Extract xi = 1 + zeta_2 for each case.
+
+3. **Eulerian → Lagrangian mapping**: Connect the cascade zeta_2 to the Kraichnan xi, and verify that α = 2/xi = 2/(1+zeta_2) across all intermittency values.
+
+4. **RG flow**: Plot α_eff(τ) from the characteristic function data and fit the crossover from α≈2 (short times) to α=2/xi (long times). Extract the crossover time as a function of xi.
+
+5. **Kolmogorov prediction**: For the physical case xi=5/3, compute the predicted fractional exponent α=6/5=1.2. Test whether the kolmogorov_pure tracer data is consistent with this.
+
+6. **Intermittency correction**: Quantify how She-Leveque intermittency corrections shift xi and hence α away from the K41 prediction.
+
+7. **Effective operator identification**: For each dataset, test whether the large-time tracer PDF satisfies the fractional diffusion equation with α=2/xi by checking the characteristic function form φ(k,t) = exp(-D_α|k|^α·t).
+
+- **Current Idea**: **Title**: Renormalization Group Mapping of Turbulent Pair Dispersion to Fractional Lévy Dynamics
+
+**Description**: 
+This study establishes the exact mapping between Eulerian velocity cascade intermittency and Lagrangian pair-dispersion anomalous diffusion. We will verify the RG fixed-point relation $\alpha = 2/\xi$ by calculating $\xi = 1 + \zeta_2$ from the log-normal cascade structure functions ($\mu=0, 0.15, 0.28$) and comparing these against the MSD scaling exponent $H = \xi/2$ derived from the `kraichnan_xi*_pair_r2.npy` datasets. We will quantify the departure from the K41 prediction ($\alpha \approx 1.2$) by incorporating She-Leveque intermittency corrections to the spectral roughness $\xi$, determining if these corrections constitute a first-order shift in the effective fractional operator. Finally, we will validate the fractional diffusion equation $\partial_t P = -D_\alpha(-\Delta)^{\alpha/2} P$ by fitting the characteristic functions of pair separations to confirm the convergence of the Lévy-stable exponent $\alpha$ in the high-Reynolds-number limit. This confirms whether the fractional Laplacian is a universal generator of turbulent pair-dispersion statistics across varying degrees of multifractal intermittency.
+- **Previous Versions (for context)**: 
+
+
+Iteration 0:
+Idea: **Title**: Renormalization Group Mapping of Turbulent Pair Dispersion to Fractional Lévy Dynamics
+
+**Description**: 
+This study establishes the exact mapping between Eulerian velocity cascade intermittency and Lagrangian pair-dispersion anomalous diffusion. We will verify the RG fixed-point relation $\alpha = 2/\xi$ by calculating $\xi = 1 + \zeta_2$ from the log-normal cascade structure functions ($\mu=0, 0.15, 0.28$) and comparing these against the MSD scaling exponent $H = \xi/2$ derived from the `kraichnan_xi*_pair_r2.npy` datasets. We will quantify the departure from the K41 prediction ($\alpha \approx 1.2$) by incorporating She-Leveque intermittency corrections to the spectral roughness $\xi$, determining if these corrections constitute a first-order shift in the effective fractional operator. Finally, we will validate the fractional diffusion equation $\partial_t P = -D_\alpha(-\Delta)^{\alpha/2} P$ by fitting the characteristic functions of pair separations to confirm the convergence of the Lévy-stable exponent $\alpha$ in the high-Reynolds-number limit. This confirms whether the fractional Laplacian is a universal generator of turbulent pair-dispersion statistics across varying degrees of multifractal intermittency.
+
+- **Human Feedback**: The previous iteration failed because the simulation data did not correctly produce anomalous diffusion. We have now fixed the Kraichnan pair dispersion simulation using a shared velocity field. The key physical insight (Falkovich, Gawedzki, Vergassola 2001): in the Kraichnan model, PAIR DISPERSION (relative separation of two tracers) shows anomalous scaling with H=xi/2, directly related to the fractional Laplacian exponent alpha=2/xi. Single-particle diffusion is normal. The new data files kraichnan_xi*_pair_r2.npy contain mean squared pair separation vs time for xi=0.5,1.0,1.5,1.8 (6001 time points, T=60). The new idea should: (1) establish the exact RG argument connecting Eulerian roughness xi to the pair-dispersion fractional exponent alpha=2/xi, (2) verify this numerically from the pair_r2 data and cascade structure functions, (3) connect to K41 (xi=5/3, alpha=1.2) and She-Leveque intermittency corrections. Maximum 4 analysis steps.    
+
+Respond in the following format:
+
+\\begin{CRITIC}
+<CRITIC>
+\\end{CRITIC}
+
+In <CRITIC>, put your criticism to the idea. Try to be brief in the description.
+
+###### PROMPT ENDS ########
+
+###### RESPONSE [model: gemini-3.1-flash-lite-preview] ########
+\begin{CRITIC}
+*   **Data-Hypothesis Mismatch**: The "Current Idea" references `kraichnan_xi*_pair_r2.npy` for MSD scaling, but this file is **not** in the provided File Inventory. The inventory only lists `kraichnan_xi*_x.npy` (single-tracer trajectories). If the hypothesis relies on pair dispersion, the current data is insufficient.
+*   **Feasibility Gap**: The "RG flow" analysis (Step 4) is flagged as "needs reanalysis" in the data description because the current `rg_alpha_eff.npy` values are all $\approx 2.0$. The proposal assumes this data will yield $\alpha = 2/\xi$ without acknowledging the high likelihood of noise-dominated results in the existing characteristic function files.
+*   **Redundancy/Weak Link**: The proposal aims to "verify" the RG fixed point $\alpha = 2/\xi$ using both cascade data and Kraichnan data. However, the Kraichnan model is *defined* by its power-law spectrum; using it to "verify" the relation is circular. The real scientific contribution lies in whether the *multifractal* cascade data (File 1) maps to the same $\alpha$ as the Kraichnan model.
+*   **Strategic Pivot**: 
+    1.  **Abandon** the attempt to use `rg_alpha_eff.npy` for direct fitting; instead, compute the MSD exponent $H$ directly from the `kraichnan_xi*_x.npy` files (acknowledging the single-particle vs. pair-dispersion distinction).
+    2.  **Focus** on the "Intermittency Correction" (Analysis 6): Use the `cascade_logN_realistic_delta_u.npy` to calculate the effective $\xi$ under She-Leveque, then predict the shift in $\alpha$ and test if this shift is observable in the `kolmogorov_multifractal_disp.npy` tracer data.
+    3.  **Constraint Check**: The proposal must explicitly address that single-particle diffusion in the Kraichnan model is normal ($\alpha=2$) while pair dispersion is anomalous. The current idea conflates these by referencing "pair dispersion" while using single-particle data.
+\end{CRITIC}
+
+
+###### PROMPT BEGINS ########
+Human: 
+**Role**: Senior Research Scientific.
+**Objective**: Synthesize a primary research idea with expert criticism to produce a refined, groundbreaking, and technically feasible scientific objective.
+
+**Task**:
+You are in an iterative refinement loop (Iteration: 1). Your goal is to take the "Previous Idea," pass it through the filter of the "Critiques," and produce a "Hardened Idea" that is more scientifically rigorous and original than its predecessor.
+
+**Refinement Principles**:
+1. **Address Caveats**: If the critic mentioned a lack of feasibility, adjust the scope of the idea to fit the 'Data Description.'
+2. **Increase Specificity**: Move away from generic goals. Use the statistics and variables found in the data description to make the idea more concrete.
+3. **Internalize Feedback**: Do not explicitly mention the criticism or explain your changes. Instead, weave the solutions directly into the new version of the idea.
+4. **Human Guidance**: Incorporate any human feedback provided, ensuring the refined idea aligns with human preferences and constraints.
+5. **Maintain Grounding**: Ensure the "groundbreaking" aspect remains physically possible within the provided dataset's constraints.
+
+**Operational Constraints**:
+- **Brevity**: Keep the description concise but high-density (max 6 sentences).
+- **Format**: Do not include introductory text or meta-commentary about the process.
+- **Fidelity**: Stick strictly to the guidelines and physical realities described in the data description.
+- The idea must contain a title and a description of the idea
+
+**Input Data**:
+- **Data Description**: 
+# Lévy Flights in High-Reynolds-Number Turbulence: Effective Physical Theory
+
+## Scientific Goal
+
+Discover the minimal effective physical theory underlying Lévy flights / anomalous diffusion (governed by the half-Laplacian and its generalization (-Δ)^{α/2}) in high-Reynolds-number turbulence. Specifically:
+
+1. **Eulerian angle**: What feature of the turbulent energy cascade (structure function scaling, multifractal spectrum, intermittency) determines the fractional Laplacian exponent α?
+2. **Lagrangian angle**: What is the physical mechanism by which turbulent velocity fields produce Lévy-stable tracer statistics?
+3. **Connection**: Can we derive a renormalization group (RG) argument connecting the Eulerian spectral exponent xi (roughness of the velocity field) to the Lagrangian fractional diffusion exponent α = 2/xi?
+4. **High-Re limit**: Does the effective fractional operator converge as Re → ∞, and what is the limiting α for Kolmogorov turbulence (xi = 5/3)?
+
+## Data Summary
+
+Four complementary datasets, covering Eulerian cascade statistics and Lagrangian tracer dynamics.
+
+---
+
+## File Inventory
+
+### 1. Random Multiplicative Energy Cascade (Eulerian, multifractal model)
+
+Simulates the turbulent energy cascade from large to small scales via log-normal random multipliers. At each cascade level l, the velocity increment scales as delta_u_l = u_0 * exp(sum_{j≤l} log(W_j) / 3) where W_j ~ LogNormal(-σ²/2, σ²) with σ² = μ·log(2) and μ is the intermittency parameter.
+
+**Note on data quality**: The structure function exponents zeta_p may need to be recomputed by the analysis code. The saved delta_u arrays contain the raw cascade realizations; structure functions S_p(r) = <|delta_u_l|^p> should be computed fresh from the raw data.
+
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_K41_delta_u.npy` — shape (5000, 20), μ=0.0 (pure K41, no intermittency). Expected: zeta_p = p/3.
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_logN_mild_delta_u.npy` — shape (5000, 20), μ=0.15 (mild intermittency). Expected: zeta_p = p/3 - μ·p(p-3)/18.
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_logN_realistic_delta_u.npy` — shape (5000, 20), μ=0.28 (realistic turbulence). Expected: zeta_p = p/3 - 0.28·p(p-3)/18.
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_K41_S_p.npy` — shape (6, 20), pre-computed S_p(l) for p=1..6 (may need recomputing).
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_r_scales.npy` — shape (20,), r_l = 2^{-l}.
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_zeta_p_K41.npy` — shape (6,), K41 predictions p/3.
+
+Cascade levels: l=0..19 (largest to smallest scale). Each row in delta_u is an independent realization. Each column is a cascade level.
+
+**Physics**: The energy spectrum E(k) ~ k^{-1-2h} where h = <log(W)/log(lambda)> = 1/3 for K41. The spectral roughness parameter xi = 1 + 2·zeta_2/2 = 1 + zeta_2 connects the cascade statistics to the Kraichnan model. For K41: xi = 5/3.
+
+### 2. Kraichnan Model — Lagrangian Tracers in Synthetic Turbulence
+
+Lagrangian tracer trajectories in a 3D Kraichnan velocity field (Gaussian, white-in-time, prescribed power-law spectrum E(k) ~ k^{1-xi}). Each trajectory is the x-component of a 3D tracer path; the velocity at each step is drawn from fresh random Fourier modes, making the field delta-correlated in time (exact Kraichnan model).
+
+**Key exact result** (Falkovich, Gawedzki, Vergassola 2001): For the Kraichnan model, the tracer MSD scales as <x²(t)> ~ t^{xi} (anomalous diffusion with H = xi/2). The coarse-grained transport is governed by the fractional diffusion equation ∂_t P = -D_α(-∂²_x)^{α/2} P with **α = 2/xi**. This is the exact RG fixed point.
+
+**Note**: The current simulation uses N_k_modes=128 Fourier modes with amplitude scaling A(k) ~ k^{(1-xi)/2}. The velocity amplitudes may be insufficiently large to produce strong anomalous diffusion at the available trajectory lengths. Analysis should directly compute the MSD scaling exponent H from the data and compare to the theoretical prediction H = xi/2.
+
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi0p50_x.npy` — shape (200, 4001), xi=0.5, theory: H=0.25, α=4.0 (subdiffusion)
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi0p75_x.npy` — shape (200, 4001), xi=0.75, theory: H=0.375, α=2.67
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi1p00_x.npy` — shape (200, 4001), xi=1.0, theory: H=0.5, α=2.0 (normal diffusion)
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi1p50_x.npy` — shape (200, 4001), xi=1.5, theory: H=0.75, α=1.33 (superdiffusion, Lévy-like)
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi1p80_x.npy` — shape (200, 4001), xi=1.8, theory: H=0.9, α=1.11 (near-ballistic)
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_tgrid.npy` — shape (10001,), time grid [0, 100]
+
+Rows = independent trajectories, columns = time steps.
+
+**For the Kolmogorov case**: Physical turbulence has xi ≈ 5/3 ≈ 1.667, giving theoretical α = 2/xi ≈ 1.2. The xi=1.5 and xi=1.8 datasets bracket this value and can be interpolated.
+
+### 3. Kolmogorov-Spectrum Tracers (1D Synthetic Turbulence)
+
+Lagrangian tracer positions in a 1D synthetic turbulent velocity field with Kolmogorov E(k) ~ k^{-5/3} spectrum, synthesized from 64 random-phase Fourier modes. Time evolution: each Fourier mode decorrelates at its eddy turnover time tau_k ~ k^{-2/3}. Positions are displacements from initial position.
+
+- `/home/node/work/projects/levy_turbulence_v1/data/kolmogorov_kolmogorov_pure_disp.npy` — shape (150, 3001), pure K41 spectrum
+- `/home/node/work/projects/levy_turbulence_v1/data/kolmogorov_kolmogorov_multifractal_disp.npy` — shape (150, 3001), K41 + intermittency correction (beta model exponent -0.3)
+- `/home/node/work/projects/levy_turbulence_v1/data/kolmogorov_tgrid.npy` — shape (8001,), time grid [0, 400]
+
+### 4. Lorenz-96 Model (Deterministic Turbulence Analogue)
+
+Lorenz-96 system: dx_i/dt = (x_{i+1} - x_{i-2})·x_{i-1} - x_i + F with N=40 variables, F=8 (well-developed chaotic regime). Used as a deterministic turbulence analogue with known structure function statistics.
+
+- `/home/node/work/projects/levy_turbulence_v1/data/lorenz96_snapshots.npy` — shape (10000, 40), x_i(t) snapshots at dt=0.05
+- `/home/node/work/projects/levy_turbulence_v1/data/lorenz96_structure_functions.npy` — shape (6, 20), S_p(lag) for p=1..6, spatial lag=1..20
+
+S_2(1) ≈ 24.6 (from simulation). Lorenz-96 with F=8 is known to exhibit anomalous diffusion in the long-time limit.
+
+### 5. RG Flow Data
+
+Characteristic functions of Kraichnan xi=1.5 tracer displacements at multiple time lags, computed to observe the RG flow of the effective diffusion operator.
+
+- `/home/node/work/projects/levy_turbulence_v1/data/rg_char_func_kraichnan_xi1p5.npy` — shape (10, 200), φ(k,τ) at tau_idx=[1,5,20,50,100,200,500,1000,2000,5000]
+- `/home/node/work/projects/levy_turbulence_v1/data/rg_tau_values.npy` — shape (10,), time indices
+- `/home/node/work/projects/levy_turbulence_v1/data/rg_k_range.npy` — shape (200,), k values in [-2, 2]
+- `/home/node/work/projects/levy_turbulence_v1/data/rg_alpha_eff.npy` — shape (10,), pre-computed effective alpha (all ≈2.0 — needs reanalysis with better fitting)
+
+---
+
+## Key Theoretical Connections
+
+### Kraichnan RG Fixed Point (exact)
+For the Kraichnan model with E(k) ~ k^{1-xi}:
+- Scaling: <x²(t)> ~ t^{xi}, H = xi/2
+- Effective operator: (-∂²)^{α/2} with **α = 2/xi**
+- For K41 (xi = 5/3): **α_K41 ≈ 1.2** (close to but not exactly the half-Laplacian α=1)
+- For the half-Laplacian (α=1): requires xi=2 (maximally rough Kraichnan field)
+
+### Structure Function Connection (Eulerian → Lagrangian)
+From Taylor's hypothesis and the Kolmogorov refined similarity hypothesis:
+- Second-order structure function: S_2(r) ~ r^{zeta_2}
+- Energy spectrum: E(k) ~ k^{-(1+zeta_2)} → xi = 1 + zeta_2
+- K41: zeta_2 = 2/3, xi = 5/3, α = 6/5 = 1.2
+- With intermittency (She-Leveque): zeta_2 ≈ 0.696, xi ≈ 1.696, α ≈ 1.18
+
+### RG Argument Sketch
+Under coarse-graining (integrating out wavenumbers k > Λ):
+1. The tracer equation dx/dt = v(x,t) + noise renormalizes
+2. The velocity correlator <v(x)v(0)> ~ |x|^{xi-1} acts as a long-range noise
+3. By the generalized CLT, the accumulated displacement converges to α-stable with α = 2/xi
+4. The fixed-point equation is the fractional diffusion equation ∂_t P = -D_α(-∂²)^{α/2} P
+5. The RG flow: α(Λ) flows from 2 (at Λ=k_max, ballistic) to 2/xi (at Λ→0, diffusive limit)
+
+---
+
+## Suggested Analyses
+
+1. **Verify Kraichnan RG**: Compute MSD scaling exponent H for each xi dataset and test H = xi/2. Compute characteristic function and extract effective α(τ) as a function of time lag to show convergence to α = 2/xi.
+
+2. **Structure function scaling**: From cascade data, compute zeta_p(mu) for mu=0, 0.15, 0.28. Fit the log-normal formula zeta_p = p/3 - mu·p(p-3)/18. Extract xi = 1 + zeta_2 for each case.
+
+3. **Eulerian → Lagrangian mapping**: Connect the cascade zeta_2 to the Kraichnan xi, and verify that α = 2/xi = 2/(1+zeta_2) across all intermittency values.
+
+4. **RG flow**: Plot α_eff(τ) from the characteristic function data and fit the crossover from α≈2 (short times) to α=2/xi (long times). Extract the crossover time as a function of xi.
+
+5. **Kolmogorov prediction**: For the physical case xi=5/3, compute the predicted fractional exponent α=6/5=1.2. Test whether the kolmogorov_pure tracer data is consistent with this.
+
+6. **Intermittency correction**: Quantify how She-Leveque intermittency corrections shift xi and hence α away from the K41 prediction.
+
+7. **Effective operator identification**: For each dataset, test whether the large-time tracer PDF satisfies the fractional diffusion equation with α=2/xi by checking the characteristic function form φ(k,t) = exp(-D_α|k|^α·t).
+
+- **Previous Versions**: 
+
+
+Iteration 0:
+Idea: **Title**: Renormalization Group Mapping of Turbulent Pair Dispersion to Fractional Lévy Dynamics
+
+**Description**: 
+This study establishes the exact mapping between Eulerian velocity cascade intermittency and Lagrangian pair-dispersion anomalous diffusion. We will verify the RG fixed-point relation $\alpha = 2/\xi$ by calculating $\xi = 1 + \zeta_2$ from the log-normal cascade structure functions ($\mu=0, 0.15, 0.28$) and comparing these against the MSD scaling exponent $H = \xi/2$ derived from the `kraichnan_xi*_pair_r2.npy` datasets. We will quantify the departure from the K41 prediction ($\alpha \approx 1.2$) by incorporating She-Leveque intermittency corrections to the spectral roughness $\xi$, determining if these corrections constitute a first-order shift in the effective fractional operator. Finally, we will validate the fractional diffusion equation $\partial_t P = -D_\alpha(-\Delta)^{\alpha/2} P$ by fitting the characteristic functions of pair separations to confirm the convergence of the Lévy-stable exponent $\alpha$ in the high-Reynolds-number limit. This confirms whether the fractional Laplacian is a universal generator of turbulent pair-dispersion statistics across varying degrees of multifractal intermittency.
+
+- **Critical Feedback**: *   **Data-Hypothesis Mismatch**: The "Current Idea" references `kraichnan_xi*_pair_r2.npy` for MSD scaling, but this file is **not** in the provided File Inventory. The inventory only lists `kraichnan_xi*_x.npy` (single-tracer trajectories). If the hypothesis relies on pair dispersion, the current data is insufficient.
+*   **Feasibility Gap**: The "RG flow" analysis (Step 4) is flagged as "needs reanalysis" in the data description because the current `rg_alpha_eff.npy` values are all $\approx 2.0$. The proposal assumes this data will yield $\alpha = 2/\xi$ without acknowledging the high likelihood of noise-dominated results in the existing characteristic function files.
+*   **Redundancy/Weak Link**: The proposal aims to "verify" the RG fixed point $\alpha = 2/\xi$ using both cascade data and Kraichnan data. However, the Kraichnan model is *defined* by its power-law spectrum; using it to "verify" the relation is circular. The real scientific contribution lies in whether the *multifractal* cascade data (File 1) maps to the same $\alpha$ as the Kraichnan model.
+*   **Strategic Pivot**: 
+    1.  **Abandon** the attempt to use `rg_alpha_eff.npy` for direct fitting; instead, compute the MSD exponent $H$ directly from the `kraichnan_xi*_x.npy` files (acknowledging the single-particle vs. pair-dispersion distinction).
+    2.  **Focus** on the "Intermittency Correction" (Analysis 6): Use the `cascade_logN_realistic_delta_u.npy` to calculate the effective $\xi$ under She-Leveque, then predict the shift in $\alpha$ and test if this shift is observable in the `kolmogorov_multifractal_disp.npy` tracer data.
+    3.  **Constraint Check**: The proposal must explicitly address that single-particle diffusion in the Kraichnan model is normal ($\alpha=2$) while pair dispersion is anomalous. The current idea conflates these by referencing "pair dispersion" while using single-particle data.
+- **Human Feedback**: The previous iteration failed because the simulation data did not correctly produce anomalous diffusion. We have now fixed the Kraichnan pair dispersion simulation using a shared velocity field. The key physical insight (Falkovich, Gawedzki, Vergassola 2001): in the Kraichnan model, PAIR DISPERSION (relative separation of two tracers) shows anomalous scaling with H=xi/2, directly related to the fractional Laplacian exponent alpha=2/xi. Single-particle diffusion is normal. The new data files kraichnan_xi*_pair_r2.npy contain mean squared pair separation vs time for xi=0.5,1.0,1.5,1.8 (6001 time points, T=60). The new idea should: (1) establish the exact RG argument connecting Eulerian roughness xi to the pair-dispersion fractional exponent alpha=2/xi, (2) verify this numerically from the pair_r2 data and cascade structure functions, (3) connect to K41 (xi=5/3, alpha=1.2) and She-Leveque intermittency corrections. Maximum 4 analysis steps.
+
+Respond in the following format:
+
+\\begin{IDEA}
+<IDEA>
+\\end{IDEA}
+
+In <IDEA>, put the refined idea. 
+
+###### PROMPT ENDS ########
+
+###### RESPONSE [model: gemini-3.1-flash-lite-preview] ########
+\begin{IDEA}
+**Title**: Multiscale Renormalization of Turbulent Pair Dispersion: From Multifractal Cascade to Lévy-Stable Dynamics
+
+**Description**: 
+This study establishes the universality of the fractional diffusion operator $\partial_t P = -D_\alpha(-\Delta)^{\alpha/2} P$ in governing the pair-separation statistics of tracers in high-Reynolds-number turbulence. We define the effective Lévy exponent $\alpha = 2/\xi$ by mapping the Eulerian spectral roughness $\xi = 1 + \zeta_2$ (derived from the `cascade_logN_realistic_delta_u.npy` multifractal model) to the Lagrangian pair-dispersion scaling $H = \xi/2$ observed in the `kraichnan_xi*_pair_r2.npy` datasets. We quantify the influence of She-Leveque intermittency ($\mu=0.28$) on the effective $\alpha$, identifying the precise shift from the K41 baseline ($\alpha \approx 1.2$) to the multifractal prediction. By analyzing the `kolmogorov_multifractal_disp.npy` tracer data, we determine whether deterministic intermittency corrections in the energy cascade propagate into a measurable anomaly in the pair-dispersion exponent. This framework provides a rigorous bridge between Eulerian multifractal structure functions and the fractional dynamics of turbulent transport.
+\end{IDEA}
+
+
+###### PROMPT BEGINS ########
+Human: 
+**Role**: Skeptical Red Team Reviewer and Scientific Auditor.
+**Objective**: Conduct a rigorous "Stress Test" on the proposed research idea to identify fatal flaws, feasibility gaps, and potential scientific "slop."
+
+**Evaluation Criteria**:
+1. **Data-Hypothesis Alignment**: Does the dataset described actually contain the variables and precision required to test this idea?
+2. **Feasibility & Noise**: Is the signal-to-noise ratio realistic? Is the idea too ambitious for the provided data?
+3. **Redundancy Check**: Does this idea simply repeat a "standard" analysis, or is it a meaningful contribution?
+4. **Physical Reality**: Does the idea violate any constraints or physical laws mentioned in the data description?
+5. **Human Alignment**: Does the idea align with any human feedback or constraints provided?
+
+**Task**:
+- Critically analyze the "Current Idea" against the "Data Description."
+- If the idea is **unfeasible**, explicitly state why and suggest a "Strategic Pivot" (a new direction that *is* supported by the data).
+- If the idea is **feasible but weak**, identify the specific "weak links" in the logic.
+- Compare it against "Previous Ideas" to ensure the refinement loop is moving forward, not backward.
+
+**Operational Constraints**:
+- **Tone**: Be professional, objective, and intellectually demanding. 
+- **Brevity**: Use high-density bullet points. Do not waste words on pleasantries.
+- **Strict Adherence**: Every criticism must be grounded in the provided 'Data Description.'
+
+**Input Data**:
+- **Data Description**: 
+# Lévy Flights in High-Reynolds-Number Turbulence: Effective Physical Theory
+
+## Scientific Goal
+
+Discover the minimal effective physical theory underlying Lévy flights / anomalous diffusion (governed by the half-Laplacian and its generalization (-Δ)^{α/2}) in high-Reynolds-number turbulence. Specifically:
+
+1. **Eulerian angle**: What feature of the turbulent energy cascade (structure function scaling, multifractal spectrum, intermittency) determines the fractional Laplacian exponent α?
+2. **Lagrangian angle**: What is the physical mechanism by which turbulent velocity fields produce Lévy-stable tracer statistics?
+3. **Connection**: Can we derive a renormalization group (RG) argument connecting the Eulerian spectral exponent xi (roughness of the velocity field) to the Lagrangian fractional diffusion exponent α = 2/xi?
+4. **High-Re limit**: Does the effective fractional operator converge as Re → ∞, and what is the limiting α for Kolmogorov turbulence (xi = 5/3)?
+
+## Data Summary
+
+Four complementary datasets, covering Eulerian cascade statistics and Lagrangian tracer dynamics.
+
+---
+
+## File Inventory
+
+### 1. Random Multiplicative Energy Cascade (Eulerian, multifractal model)
+
+Simulates the turbulent energy cascade from large to small scales via log-normal random multipliers. At each cascade level l, the velocity increment scales as delta_u_l = u_0 * exp(sum_{j≤l} log(W_j) / 3) where W_j ~ LogNormal(-σ²/2, σ²) with σ² = μ·log(2) and μ is the intermittency parameter.
+
+**Note on data quality**: The structure function exponents zeta_p may need to be recomputed by the analysis code. The saved delta_u arrays contain the raw cascade realizations; structure functions S_p(r) = <|delta_u_l|^p> should be computed fresh from the raw data.
+
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_K41_delta_u.npy` — shape (5000, 20), μ=0.0 (pure K41, no intermittency). Expected: zeta_p = p/3.
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_logN_mild_delta_u.npy` — shape (5000, 20), μ=0.15 (mild intermittency). Expected: zeta_p = p/3 - μ·p(p-3)/18.
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_logN_realistic_delta_u.npy` — shape (5000, 20), μ=0.28 (realistic turbulence). Expected: zeta_p = p/3 - 0.28·p(p-3)/18.
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_K41_S_p.npy` — shape (6, 20), pre-computed S_p(l) for p=1..6 (may need recomputing).
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_r_scales.npy` — shape (20,), r_l = 2^{-l}.
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_zeta_p_K41.npy` — shape (6,), K41 predictions p/3.
+
+Cascade levels: l=0..19 (largest to smallest scale). Each row in delta_u is an independent realization. Each column is a cascade level.
+
+**Physics**: The energy spectrum E(k) ~ k^{-1-2h} where h = <log(W)/log(lambda)> = 1/3 for K41. The spectral roughness parameter xi = 1 + 2·zeta_2/2 = 1 + zeta_2 connects the cascade statistics to the Kraichnan model. For K41: xi = 5/3.
+
+### 2. Kraichnan Model — Lagrangian Tracers in Synthetic Turbulence
+
+Lagrangian tracer trajectories in a 3D Kraichnan velocity field (Gaussian, white-in-time, prescribed power-law spectrum E(k) ~ k^{1-xi}). Each trajectory is the x-component of a 3D tracer path; the velocity at each step is drawn from fresh random Fourier modes, making the field delta-correlated in time (exact Kraichnan model).
+
+**Key exact result** (Falkovich, Gawedzki, Vergassola 2001): For the Kraichnan model, the tracer MSD scales as <x²(t)> ~ t^{xi} (anomalous diffusion with H = xi/2). The coarse-grained transport is governed by the fractional diffusion equation ∂_t P = -D_α(-∂²_x)^{α/2} P with **α = 2/xi**. This is the exact RG fixed point.
+
+**Note**: The current simulation uses N_k_modes=128 Fourier modes with amplitude scaling A(k) ~ k^{(1-xi)/2}. The velocity amplitudes may be insufficiently large to produce strong anomalous diffusion at the available trajectory lengths. Analysis should directly compute the MSD scaling exponent H from the data and compare to the theoretical prediction H = xi/2.
+
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi0p50_x.npy` — shape (200, 4001), xi=0.5, theory: H=0.25, α=4.0 (subdiffusion)
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi0p75_x.npy` — shape (200, 4001), xi=0.75, theory: H=0.375, α=2.67
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi1p00_x.npy` — shape (200, 4001), xi=1.0, theory: H=0.5, α=2.0 (normal diffusion)
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi1p50_x.npy` — shape (200, 4001), xi=1.5, theory: H=0.75, α=1.33 (superdiffusion, Lévy-like)
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi1p80_x.npy` — shape (200, 4001), xi=1.8, theory: H=0.9, α=1.11 (near-ballistic)
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_tgrid.npy` — shape (10001,), time grid [0, 100]
+
+Rows = independent trajectories, columns = time steps.
+
+**For the Kolmogorov case**: Physical turbulence has xi ≈ 5/3 ≈ 1.667, giving theoretical α = 2/xi ≈ 1.2. The xi=1.5 and xi=1.8 datasets bracket this value and can be interpolated.
+
+### 3. Kolmogorov-Spectrum Tracers (1D Synthetic Turbulence)
+
+Lagrangian tracer positions in a 1D synthetic turbulent velocity field with Kolmogorov E(k) ~ k^{-5/3} spectrum, synthesized from 64 random-phase Fourier modes. Time evolution: each Fourier mode decorrelates at its eddy turnover time tau_k ~ k^{-2/3}. Positions are displacements from initial position.
+
+- `/home/node/work/projects/levy_turbulence_v1/data/kolmogorov_kolmogorov_pure_disp.npy` — shape (150, 3001), pure K41 spectrum
+- `/home/node/work/projects/levy_turbulence_v1/data/kolmogorov_kolmogorov_multifractal_disp.npy` — shape (150, 3001), K41 + intermittency correction (beta model exponent -0.3)
+- `/home/node/work/projects/levy_turbulence_v1/data/kolmogorov_tgrid.npy` — shape (8001,), time grid [0, 400]
+
+### 4. Lorenz-96 Model (Deterministic Turbulence Analogue)
+
+Lorenz-96 system: dx_i/dt = (x_{i+1} - x_{i-2})·x_{i-1} - x_i + F with N=40 variables, F=8 (well-developed chaotic regime). Used as a deterministic turbulence analogue with known structure function statistics.
+
+- `/home/node/work/projects/levy_turbulence_v1/data/lorenz96_snapshots.npy` — shape (10000, 40), x_i(t) snapshots at dt=0.05
+- `/home/node/work/projects/levy_turbulence_v1/data/lorenz96_structure_functions.npy` — shape (6, 20), S_p(lag) for p=1..6, spatial lag=1..20
+
+S_2(1) ≈ 24.6 (from simulation). Lorenz-96 with F=8 is known to exhibit anomalous diffusion in the long-time limit.
+
+### 5. RG Flow Data
+
+Characteristic functions of Kraichnan xi=1.5 tracer displacements at multiple time lags, computed to observe the RG flow of the effective diffusion operator.
+
+- `/home/node/work/projects/levy_turbulence_v1/data/rg_char_func_kraichnan_xi1p5.npy` — shape (10, 200), φ(k,τ) at tau_idx=[1,5,20,50,100,200,500,1000,2000,5000]
+- `/home/node/work/projects/levy_turbulence_v1/data/rg_tau_values.npy` — shape (10,), time indices
+- `/home/node/work/projects/levy_turbulence_v1/data/rg_k_range.npy` — shape (200,), k values in [-2, 2]
+- `/home/node/work/projects/levy_turbulence_v1/data/rg_alpha_eff.npy` — shape (10,), pre-computed effective alpha (all ≈2.0 — needs reanalysis with better fitting)
+
+---
+
+## Key Theoretical Connections
+
+### Kraichnan RG Fixed Point (exact)
+For the Kraichnan model with E(k) ~ k^{1-xi}:
+- Scaling: <x²(t)> ~ t^{xi}, H = xi/2
+- Effective operator: (-∂²)^{α/2} with **α = 2/xi**
+- For K41 (xi = 5/3): **α_K41 ≈ 1.2** (close to but not exactly the half-Laplacian α=1)
+- For the half-Laplacian (α=1): requires xi=2 (maximally rough Kraichnan field)
+
+### Structure Function Connection (Eulerian → Lagrangian)
+From Taylor's hypothesis and the Kolmogorov refined similarity hypothesis:
+- Second-order structure function: S_2(r) ~ r^{zeta_2}
+- Energy spectrum: E(k) ~ k^{-(1+zeta_2)} → xi = 1 + zeta_2
+- K41: zeta_2 = 2/3, xi = 5/3, α = 6/5 = 1.2
+- With intermittency (She-Leveque): zeta_2 ≈ 0.696, xi ≈ 1.696, α ≈ 1.18
+
+### RG Argument Sketch
+Under coarse-graining (integrating out wavenumbers k > Λ):
+1. The tracer equation dx/dt = v(x,t) + noise renormalizes
+2. The velocity correlator <v(x)v(0)> ~ |x|^{xi-1} acts as a long-range noise
+3. By the generalized CLT, the accumulated displacement converges to α-stable with α = 2/xi
+4. The fixed-point equation is the fractional diffusion equation ∂_t P = -D_α(-∂²)^{α/2} P
+5. The RG flow: α(Λ) flows from 2 (at Λ=k_max, ballistic) to 2/xi (at Λ→0, diffusive limit)
+
+---
+
+## Suggested Analyses
+
+1. **Verify Kraichnan RG**: Compute MSD scaling exponent H for each xi dataset and test H = xi/2. Compute characteristic function and extract effective α(τ) as a function of time lag to show convergence to α = 2/xi.
+
+2. **Structure function scaling**: From cascade data, compute zeta_p(mu) for mu=0, 0.15, 0.28. Fit the log-normal formula zeta_p = p/3 - mu·p(p-3)/18. Extract xi = 1 + zeta_2 for each case.
+
+3. **Eulerian → Lagrangian mapping**: Connect the cascade zeta_2 to the Kraichnan xi, and verify that α = 2/xi = 2/(1+zeta_2) across all intermittency values.
+
+4. **RG flow**: Plot α_eff(τ) from the characteristic function data and fit the crossover from α≈2 (short times) to α=2/xi (long times). Extract the crossover time as a function of xi.
+
+5. **Kolmogorov prediction**: For the physical case xi=5/3, compute the predicted fractional exponent α=6/5=1.2. Test whether the kolmogorov_pure tracer data is consistent with this.
+
+6. **Intermittency correction**: Quantify how She-Leveque intermittency corrections shift xi and hence α away from the K41 prediction.
+
+7. **Effective operator identification**: For each dataset, test whether the large-time tracer PDF satisfies the fractional diffusion equation with α=2/xi by checking the characteristic function form φ(k,t) = exp(-D_α|k|^α·t).
+
+- **Current Idea**: **Title**: Multiscale Renormalization of Turbulent Pair Dispersion: From Multifractal Cascade to Lévy-Stable Dynamics
+
+**Description**: 
+This study establishes the universality of the fractional diffusion operator $\partial_t P = -D_\alpha(-\Delta)^{\alpha/2} P$ in governing the pair-separation statistics of tracers in high-Reynolds-number turbulence. We define the effective Lévy exponent $\alpha = 2/\xi$ by mapping the Eulerian spectral roughness $\xi = 1 + \zeta_2$ (derived from the `cascade_logN_realistic_delta_u.npy` multifractal model) to the Lagrangian pair-dispersion scaling $H = \xi/2$ observed in the `kraichnan_xi*_pair_r2.npy` datasets. We quantify the influence of She-Leveque intermittency ($\mu=0.28$) on the effective $\alpha$, identifying the precise shift from the K41 baseline ($\alpha \approx 1.2$) to the multifractal prediction. By analyzing the `kolmogorov_multifractal_disp.npy` tracer data, we determine whether deterministic intermittency corrections in the energy cascade propagate into a measurable anomaly in the pair-dispersion exponent. This framework provides a rigorous bridge between Eulerian multifractal structure functions and the fractional dynamics of turbulent transport.
+- **Previous Versions (for context)**: 
+
+
+
+Iteration 0:
+Idea: **Title**: Renormalization Group Mapping of Turbulent Pair Dispersion to Fractional Lévy Dynamics
+
+**Description**: 
+This study establishes the exact mapping between Eulerian velocity cascade intermittency and Lagrangian pair-dispersion anomalous diffusion. We will verify the RG fixed-point relation $\alpha = 2/\xi$ by calculating $\xi = 1 + \zeta_2$ from the log-normal cascade structure functions ($\mu=0, 0.15, 0.28$) and comparing these against the MSD scaling exponent $H = \xi/2$ derived from the `kraichnan_xi*_pair_r2.npy` datasets. We will quantify the departure from the K41 prediction ($\alpha \approx 1.2$) by incorporating She-Leveque intermittency corrections to the spectral roughness $\xi$, determining if these corrections constitute a first-order shift in the effective fractional operator. Finally, we will validate the fractional diffusion equation $\partial_t P = -D_\alpha(-\Delta)^{\alpha/2} P$ by fitting the characteristic functions of pair separations to confirm the convergence of the Lévy-stable exponent $\alpha$ in the high-Reynolds-number limit. This confirms whether the fractional Laplacian is a universal generator of turbulent pair-dispersion statistics across varying degrees of multifractal intermittency.
+
+
+Iteration 1:
+Idea: **Title**: Multiscale Renormalization of Turbulent Pair Dispersion: From Multifractal Cascade to Lévy-Stable Dynamics
+
+**Description**: 
+This study establishes the universality of the fractional diffusion operator $\partial_t P = -D_\alpha(-\Delta)^{\alpha/2} P$ in governing the pair-separation statistics of tracers in high-Reynolds-number turbulence. We define the effective Lévy exponent $\alpha = 2/\xi$ by mapping the Eulerian spectral roughness $\xi = 1 + \zeta_2$ (derived from the `cascade_logN_realistic_delta_u.npy` multifractal model) to the Lagrangian pair-dispersion scaling $H = \xi/2$ observed in the `kraichnan_xi*_pair_r2.npy` datasets. We quantify the influence of She-Leveque intermittency ($\mu=0.28$) on the effective $\alpha$, identifying the precise shift from the K41 baseline ($\alpha \approx 1.2$) to the multifractal prediction. By analyzing the `kolmogorov_multifractal_disp.npy` tracer data, we determine whether deterministic intermittency corrections in the energy cascade propagate into a measurable anomaly in the pair-dispersion exponent. This framework provides a rigorous bridge between Eulerian multifractal structure functions and the fractional dynamics of turbulent transport.
+
+- **Human Feedback**: The previous iteration failed because the simulation data did not correctly produce anomalous diffusion. We have now fixed the Kraichnan pair dispersion simulation using a shared velocity field. The key physical insight (Falkovich, Gawedzki, Vergassola 2001): in the Kraichnan model, PAIR DISPERSION (relative separation of two tracers) shows anomalous scaling with H=xi/2, directly related to the fractional Laplacian exponent alpha=2/xi. Single-particle diffusion is normal. The new data files kraichnan_xi*_pair_r2.npy contain mean squared pair separation vs time for xi=0.5,1.0,1.5,1.8 (6001 time points, T=60). The new idea should: (1) establish the exact RG argument connecting Eulerian roughness xi to the pair-dispersion fractional exponent alpha=2/xi, (2) verify this numerically from the pair_r2 data and cascade structure functions, (3) connect to K41 (xi=5/3, alpha=1.2) and She-Leveque intermittency corrections. Maximum 4 analysis steps.    
+
+Respond in the following format:
+
+\\begin{CRITIC}
+<CRITIC>
+\\end{CRITIC}
+
+In <CRITIC>, put your criticism to the idea. Try to be brief in the description.
+
+###### PROMPT ENDS ########
+
+###### RESPONSE [model: gemini-3.1-flash-lite-preview] ########
+\begin{CRITIC}
+*   **Data-Hypothesis Alignment**: The proposal references `kraichnan_xi*_pair_r2.npy`, but this file is **absent** from the provided File Inventory. The inventory only lists `kraichnan_xi*_x.npy` (single-particle trajectories). You cannot test pair dispersion with single-particle data unless you compute relative separations from the existing `x.npy` files, which introduces significant noise and potential bias.
+*   **Feasibility & Noise**: The "RG flow" analysis is currently weak. The provided `rg_alpha_eff.npy` is noted as "all ≈2.0 — needs reanalysis." Relying on this data without a robust plan to filter the short-time ballistic regime (where $\alpha \to 2$ regardless of turbulence) will lead to a false rejection of the $\alpha = 2/\xi$ hypothesis.
+*   **Redundancy Check**: The proposal repeats the previous iteration's focus on "universality" without addressing the specific numerical discrepancy in the RG data.
+*   **Strategic Pivot**: 
+    1.  **Abandon** the assumption of pre-existing pair-dispersion files. Compute relative separation $R^2(t) = \langle |x_1(t) - x_2(t)|^2 \rangle$ directly from the `kraichnan_xi*_x.npy` datasets by pairing trajectories.
+    2.  **Refine the RG analysis**: Instead of fitting $\alpha$ globally, perform a sliding-window fit of the characteristic function $\phi(k, \tau)$ to extract $\alpha(\tau)$ and explicitly demonstrate the crossover from ballistic ($\alpha=2$) to the anomalous regime ($\alpha=2/\xi$).
+    3.  **Intermittency Validation**: Use the `kolmogorov_kolmogorov_multifractal_disp.npy` data to calculate the *actual* observed $H$ and compare it against the theoretical $H = \xi/2$ derived from the multifractal $\zeta_2$ calculation.
+    4.  **Constraint Check**: Ensure the analysis of `lorenz96_structure_functions.npy` is used as a "sanity check" for the Eulerian-Lagrangian mapping, as it provides a deterministic baseline for $\zeta_2$ that is independent of the synthetic Kraichnan model.
+\end{CRITIC}
+
+
+###### PROMPT BEGINS ########
+Human: 
+**Role**: Senior Research Scientific.
+**Objective**: Synthesize a primary research idea with expert criticism to produce a refined, groundbreaking, and technically feasible scientific objective.
+
+**Task**:
+You are in an iterative refinement loop (Iteration: 2). Your goal is to take the "Previous Idea," pass it through the filter of the "Critiques," and produce a "Hardened Idea" that is more scientifically rigorous and original than its predecessor.
+
+**Refinement Principles**:
+1. **Address Caveats**: If the critic mentioned a lack of feasibility, adjust the scope of the idea to fit the 'Data Description.'
+2. **Increase Specificity**: Move away from generic goals. Use the statistics and variables found in the data description to make the idea more concrete.
+3. **Internalize Feedback**: Do not explicitly mention the criticism or explain your changes. Instead, weave the solutions directly into the new version of the idea.
+4. **Human Guidance**: Incorporate any human feedback provided, ensuring the refined idea aligns with human preferences and constraints.
+5. **Maintain Grounding**: Ensure the "groundbreaking" aspect remains physically possible within the provided dataset's constraints.
+
+**Operational Constraints**:
+- **Brevity**: Keep the description concise but high-density (max 6 sentences).
+- **Format**: Do not include introductory text or meta-commentary about the process.
+- **Fidelity**: Stick strictly to the guidelines and physical realities described in the data description.
+- The idea must contain a title and a description of the idea
+
+**Input Data**:
+- **Data Description**: 
+# Lévy Flights in High-Reynolds-Number Turbulence: Effective Physical Theory
+
+## Scientific Goal
+
+Discover the minimal effective physical theory underlying Lévy flights / anomalous diffusion (governed by the half-Laplacian and its generalization (-Δ)^{α/2}) in high-Reynolds-number turbulence. Specifically:
+
+1. **Eulerian angle**: What feature of the turbulent energy cascade (structure function scaling, multifractal spectrum, intermittency) determines the fractional Laplacian exponent α?
+2. **Lagrangian angle**: What is the physical mechanism by which turbulent velocity fields produce Lévy-stable tracer statistics?
+3. **Connection**: Can we derive a renormalization group (RG) argument connecting the Eulerian spectral exponent xi (roughness of the velocity field) to the Lagrangian fractional diffusion exponent α = 2/xi?
+4. **High-Re limit**: Does the effective fractional operator converge as Re → ∞, and what is the limiting α for Kolmogorov turbulence (xi = 5/3)?
+
+## Data Summary
+
+Four complementary datasets, covering Eulerian cascade statistics and Lagrangian tracer dynamics.
+
+---
+
+## File Inventory
+
+### 1. Random Multiplicative Energy Cascade (Eulerian, multifractal model)
+
+Simulates the turbulent energy cascade from large to small scales via log-normal random multipliers. At each cascade level l, the velocity increment scales as delta_u_l = u_0 * exp(sum_{j≤l} log(W_j) / 3) where W_j ~ LogNormal(-σ²/2, σ²) with σ² = μ·log(2) and μ is the intermittency parameter.
+
+**Note on data quality**: The structure function exponents zeta_p may need to be recomputed by the analysis code. The saved delta_u arrays contain the raw cascade realizations; structure functions S_p(r) = <|delta_u_l|^p> should be computed fresh from the raw data.
+
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_K41_delta_u.npy` — shape (5000, 20), μ=0.0 (pure K41, no intermittency). Expected: zeta_p = p/3.
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_logN_mild_delta_u.npy` — shape (5000, 20), μ=0.15 (mild intermittency). Expected: zeta_p = p/3 - μ·p(p-3)/18.
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_logN_realistic_delta_u.npy` — shape (5000, 20), μ=0.28 (realistic turbulence). Expected: zeta_p = p/3 - 0.28·p(p-3)/18.
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_K41_S_p.npy` — shape (6, 20), pre-computed S_p(l) for p=1..6 (may need recomputing).
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_r_scales.npy` — shape (20,), r_l = 2^{-l}.
+- `/home/node/work/projects/levy_turbulence_v1/data/cascade_zeta_p_K41.npy` — shape (6,), K41 predictions p/3.
+
+Cascade levels: l=0..19 (largest to smallest scale). Each row in delta_u is an independent realization. Each column is a cascade level.
+
+**Physics**: The energy spectrum E(k) ~ k^{-1-2h} where h = <log(W)/log(lambda)> = 1/3 for K41. The spectral roughness parameter xi = 1 + 2·zeta_2/2 = 1 + zeta_2 connects the cascade statistics to the Kraichnan model. For K41: xi = 5/3.
+
+### 2. Kraichnan Model — Lagrangian Tracers in Synthetic Turbulence
+
+Lagrangian tracer trajectories in a 3D Kraichnan velocity field (Gaussian, white-in-time, prescribed power-law spectrum E(k) ~ k^{1-xi}). Each trajectory is the x-component of a 3D tracer path; the velocity at each step is drawn from fresh random Fourier modes, making the field delta-correlated in time (exact Kraichnan model).
+
+**Key exact result** (Falkovich, Gawedzki, Vergassola 2001): For the Kraichnan model, the tracer MSD scales as <x²(t)> ~ t^{xi} (anomalous diffusion with H = xi/2). The coarse-grained transport is governed by the fractional diffusion equation ∂_t P = -D_α(-∂²_x)^{α/2} P with **α = 2/xi**. This is the exact RG fixed point.
+
+**Note**: The current simulation uses N_k_modes=128 Fourier modes with amplitude scaling A(k) ~ k^{(1-xi)/2}. The velocity amplitudes may be insufficiently large to produce strong anomalous diffusion at the available trajectory lengths. Analysis should directly compute the MSD scaling exponent H from the data and compare to the theoretical prediction H = xi/2.
+
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi0p50_x.npy` — shape (200, 4001), xi=0.5, theory: H=0.25, α=4.0 (subdiffusion)
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi0p75_x.npy` — shape (200, 4001), xi=0.75, theory: H=0.375, α=2.67
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi1p00_x.npy` — shape (200, 4001), xi=1.0, theory: H=0.5, α=2.0 (normal diffusion)
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi1p50_x.npy` — shape (200, 4001), xi=1.5, theory: H=0.75, α=1.33 (superdiffusion, Lévy-like)
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_xi1p80_x.npy` — shape (200, 4001), xi=1.8, theory: H=0.9, α=1.11 (near-ballistic)
+- `/home/node/work/projects/levy_turbulence_v1/data/kraichnan_tgrid.npy` — shape (10001,), time grid [0, 100]
+
+Rows = independent trajectories, columns = time steps.
+
+**For the Kolmogorov case**: Physical turbulence has xi ≈ 5/3 ≈ 1.667, giving theoretical α = 2/xi ≈ 1.2. The xi=1.5 and xi=1.8 datasets bracket this value and can be interpolated.
+
+### 3. Kolmogorov-Spectrum Tracers (1D Synthetic Turbulence)
+
+Lagrangian tracer positions in a 1D synthetic turbulent velocity field with Kolmogorov E(k) ~ k^{-5/3} spectrum, synthesized from 64 random-phase Fourier modes. Time evolution: each Fourier mode decorrelates at its eddy turnover time tau_k ~ k^{-2/3}. Positions are displacements from initial position.
+
+- `/home/node/work/projects/levy_turbulence_v1/data/kolmogorov_kolmogorov_pure_disp.npy` — shape (150, 3001), pure K41 spectrum
+- `/home/node/work/projects/levy_turbulence_v1/data/kolmogorov_kolmogorov_multifractal_disp.npy` — shape (150, 3001), K41 + intermittency correction (beta model exponent -0.3)
+- `/home/node/work/projects/levy_turbulence_v1/data/kolmogorov_tgrid.npy` — shape (8001,), time grid [0, 400]
+
+### 4. Lorenz-96 Model (Deterministic Turbulence Analogue)
+
+Lorenz-96 system: dx_i/dt = (x_{i+1} - x_{i-2})·x_{i-1} - x_i + F with N=40 variables, F=8 (well-developed chaotic regime). Used as a deterministic turbulence analogue with known structure function statistics.
+
+- `/home/node/work/projects/levy_turbulence_v1/data/lorenz96_snapshots.npy` — shape (10000, 40), x_i(t) snapshots at dt=0.05
+- `/home/node/work/projects/levy_turbulence_v1/data/lorenz96_structure_functions.npy` — shape (6, 20), S_p(lag) for p=1..6, spatial lag=1..20
+
+S_2(1) ≈ 24.6 (from simulation). Lorenz-96 with F=8 is known to exhibit anomalous diffusion in the long-time limit.
+
+### 5. RG Flow Data
+
+Characteristic functions of Kraichnan xi=1.5 tracer displacements at multiple time lags, computed to observe the RG flow of the effective diffusion operator.
+
+- `/home/node/work/projects/levy_turbulence_v1/data/rg_char_func_kraichnan_xi1p5.npy` — shape (10, 200), φ(k,τ) at tau_idx=[1,5,20,50,100,200,500,1000,2000,5000]
+- `/home/node/work/projects/levy_turbulence_v1/data/rg_tau_values.npy` — shape (10,), time indices
+- `/home/node/work/projects/levy_turbulence_v1/data/rg_k_range.npy` — shape (200,), k values in [-2, 2]
+- `/home/node/work/projects/levy_turbulence_v1/data/rg_alpha_eff.npy` — shape (10,), pre-computed effective alpha (all ≈2.0 — needs reanalysis with better fitting)
+
+---
+
+## Key Theoretical Connections
+
+### Kraichnan RG Fixed Point (exact)
+For the Kraichnan model with E(k) ~ k^{1-xi}:
+- Scaling: <x²(t)> ~ t^{xi}, H = xi/2
+- Effective operator: (-∂²)^{α/2} with **α = 2/xi**
+- For K41 (xi = 5/3): **α_K41 ≈ 1.2** (close to but not exactly the half-Laplacian α=1)
+- For the half-Laplacian (α=1): requires xi=2 (maximally rough Kraichnan field)
+
+### Structure Function Connection (Eulerian → Lagrangian)
+From Taylor's hypothesis and the Kolmogorov refined similarity hypothesis:
+- Second-order structure function: S_2(r) ~ r^{zeta_2}
+- Energy spectrum: E(k) ~ k^{-(1+zeta_2)} → xi = 1 + zeta_2
+- K41: zeta_2 = 2/3, xi = 5/3, α = 6/5 = 1.2
+- With intermittency (She-Leveque): zeta_2 ≈ 0.696, xi ≈ 1.696, α ≈ 1.18
+
+### RG Argument Sketch
+Under coarse-graining (integrating out wavenumbers k > Λ):
+1. The tracer equation dx/dt = v(x,t) + noise renormalizes
+2. The velocity correlator <v(x)v(0)> ~ |x|^{xi-1} acts as a long-range noise
+3. By the generalized CLT, the accumulated displacement converges to α-stable with α = 2/xi
+4. The fixed-point equation is the fractional diffusion equation ∂_t P = -D_α(-∂²)^{α/2} P
+5. The RG flow: α(Λ) flows from 2 (at Λ=k_max, ballistic) to 2/xi (at Λ→0, diffusive limit)
+
+---
+
+## Suggested Analyses
+
+1. **Verify Kraichnan RG**: Compute MSD scaling exponent H for each xi dataset and test H = xi/2. Compute characteristic function and extract effective α(τ) as a function of time lag to show convergence to α = 2/xi.
+
+2. **Structure function scaling**: From cascade data, compute zeta_p(mu) for mu=0, 0.15, 0.28. Fit the log-normal formula zeta_p = p/3 - mu·p(p-3)/18. Extract xi = 1 + zeta_2 for each case.
+
+3. **Eulerian → Lagrangian mapping**: Connect the cascade zeta_2 to the Kraichnan xi, and verify that α = 2/xi = 2/(1+zeta_2) across all intermittency values.
+
+4. **RG flow**: Plot α_eff(τ) from the characteristic function data and fit the crossover from α≈2 (short times) to α=2/xi (long times). Extract the crossover time as a function of xi.
+
+5. **Kolmogorov prediction**: For the physical case xi=5/3, compute the predicted fractional exponent α=6/5=1.2. Test whether the kolmogorov_pure tracer data is consistent with this.
+
+6. **Intermittency correction**: Quantify how She-Leveque intermittency corrections shift xi and hence α away from the K41 prediction.
+
+7. **Effective operator identification**: For each dataset, test whether the large-time tracer PDF satisfies the fractional diffusion equation with α=2/xi by checking the characteristic function form φ(k,t) = exp(-D_α|k|^α·t).
+
+- **Previous Versions**: 
+
+
+
+Iteration 0:
+Idea: **Title**: Renormalization Group Mapping of Turbulent Pair Dispersion to Fractional Lévy Dynamics
+
+**Description**: 
+This study establishes the exact mapping between Eulerian velocity cascade intermittency and Lagrangian pair-dispersion anomalous diffusion. We will verify the RG fixed-point relation $\alpha = 2/\xi$ by calculating $\xi = 1 + \zeta_2$ from the log-normal cascade structure functions ($\mu=0, 0.15, 0.28$) and comparing these against the MSD scaling exponent $H = \xi/2$ derived from the `kraichnan_xi*_pair_r2.npy` datasets. We will quantify the departure from the K41 prediction ($\alpha \approx 1.2$) by incorporating She-Leveque intermittency corrections to the spectral roughness $\xi$, determining if these corrections constitute a first-order shift in the effective fractional operator. Finally, we will validate the fractional diffusion equation $\partial_t P = -D_\alpha(-\Delta)^{\alpha/2} P$ by fitting the characteristic functions of pair separations to confirm the convergence of the Lévy-stable exponent $\alpha$ in the high-Reynolds-number limit. This confirms whether the fractional Laplacian is a universal generator of turbulent pair-dispersion statistics across varying degrees of multifractal intermittency.
+
+
+Iteration 1:
+Idea: **Title**: Multiscale Renormalization of Turbulent Pair Dispersion: From Multifractal Cascade to Lévy-Stable Dynamics
+
+**Description**: 
+This study establishes the universality of the fractional diffusion operator $\partial_t P = -D_\alpha(-\Delta)^{\alpha/2} P$ in governing the pair-separation statistics of tracers in high-Reynolds-number turbulence. We define the effective Lévy exponent $\alpha = 2/\xi$ by mapping the Eulerian spectral roughness $\xi = 1 + \zeta_2$ (derived from the `cascade_logN_realistic_delta_u.npy` multifractal model) to the Lagrangian pair-dispersion scaling $H = \xi/2$ observed in the `kraichnan_xi*_pair_r2.npy` datasets. We quantify the influence of She-Leveque intermittency ($\mu=0.28$) on the effective $\alpha$, identifying the precise shift from the K41 baseline ($\alpha \approx 1.2$) to the multifractal prediction. By analyzing the `kolmogorov_multifractal_disp.npy` tracer data, we determine whether deterministic intermittency corrections in the energy cascade propagate into a measurable anomaly in the pair-dispersion exponent. This framework provides a rigorous bridge between Eulerian multifractal structure functions and the fractional dynamics of turbulent transport.
+
+- **Critical Feedback**: *   **Data-Hypothesis Alignment**: The proposal references `kraichnan_xi*_pair_r2.npy`, but this file is **absent** from the provided File Inventory. The inventory only lists `kraichnan_xi*_x.npy` (single-particle trajectories). You cannot test pair dispersion with single-particle data unless you compute relative separations from the existing `x.npy` files, which introduces significant noise and potential bias.
+*   **Feasibility & Noise**: The "RG flow" analysis is currently weak. The provided `rg_alpha_eff.npy` is noted as "all ≈2.0 — needs reanalysis." Relying on this data without a robust plan to filter the short-time ballistic regime (where $\alpha \to 2$ regardless of turbulence) will lead to a false rejection of the $\alpha = 2/\xi$ hypothesis.
+*   **Redundancy Check**: The proposal repeats the previous iteration's focus on "universality" without addressing the specific numerical discrepancy in the RG data.
+*   **Strategic Pivot**: 
+    1.  **Abandon** the assumption of pre-existing pair-dispersion files. Compute relative separation $R^2(t) = \langle |x_1(t) - x_2(t)|^2 \rangle$ directly from the `kraichnan_xi*_x.npy` datasets by pairing trajectories.
+    2.  **Refine the RG analysis**: Instead of fitting $\alpha$ globally, perform a sliding-window fit of the characteristic function $\phi(k, \tau)$ to extract $\alpha(\tau)$ and explicitly demonstrate the crossover from ballistic ($\alpha=2$) to the anomalous regime ($\alpha=2/\xi$).
+    3.  **Intermittency Validation**: Use the `kolmogorov_kolmogorov_multifractal_disp.npy` data to calculate the *actual* observed $H$ and compare it against the theoretical $H = \xi/2$ derived from the multifractal $\zeta_2$ calculation.
+    4.  **Constraint Check**: Ensure the analysis of `lorenz96_structure_functions.npy` is used as a "sanity check" for the Eulerian-Lagrangian mapping, as it provides a deterministic baseline for $\zeta_2$ that is independent of the synthetic Kraichnan model.
+- **Human Feedback**: The previous iteration failed because the simulation data did not correctly produce anomalous diffusion. We have now fixed the Kraichnan pair dispersion simulation using a shared velocity field. The key physical insight (Falkovich, Gawedzki, Vergassola 2001): in the Kraichnan model, PAIR DISPERSION (relative separation of two tracers) shows anomalous scaling with H=xi/2, directly related to the fractional Laplacian exponent alpha=2/xi. Single-particle diffusion is normal. The new data files kraichnan_xi*_pair_r2.npy contain mean squared pair separation vs time for xi=0.5,1.0,1.5,1.8 (6001 time points, T=60). The new idea should: (1) establish the exact RG argument connecting Eulerian roughness xi to the pair-dispersion fractional exponent alpha=2/xi, (2) verify this numerically from the pair_r2 data and cascade structure functions, (3) connect to K41 (xi=5/3, alpha=1.2) and She-Leveque intermittency corrections. Maximum 4 analysis steps.
+
+Respond in the following format:
+
+\\begin{IDEA}
+<IDEA>
+\\end{IDEA}
+
+In <IDEA>, put the refined idea. 
+
+###### PROMPT ENDS ########
+
+###### RESPONSE [model: gemini-3.1-flash-lite-preview] ########
+\begin{IDEA}
+**Title**: Renormalization Group Verification of Fractional Lévy Dynamics in Turbulent Pair Dispersion
+
+**Description**: 
+This study quantifies the emergence of anomalous pair-dispersion as a fixed-point property of the fractional diffusion equation $\partial_t P = -D_\alpha(-\Delta)^{\alpha/2} P$, where the Lévy exponent $\alpha = 2/\xi$ is governed by the Eulerian spectral roughness $\xi = 1 + \zeta_2$. We will perform a four-stage validation: 
+1. Compute the Eulerian spectral roughness $\xi$ for the multifractal cascade ($\mu=0.28$) using the structure function scaling $\zeta_2$ and validate these parameters against the Lorenz-96 deterministic baseline. 
+2. Extract the pair-dispersion scaling exponent $H$ from the `kraichnan_xi*_pair_r2.npy` datasets via log-log regression to confirm the theoretical relation $H = \xi/2$. 
+3. Apply a sliding-window analysis on the characteristic functions $\phi(k, \tau)$ to track the RG flow of $\alpha(\tau)$, explicitly demonstrating the crossover from short-time ballistic behavior ($\alpha \to 2$) to the anomalous diffusion regime ($\alpha \to 2/\xi$). 
+4. Assess the impact of She-Leveque intermittency on the Kolmogorov prediction ($\alpha \approx 1.2$) by comparing the theoretical $\alpha$ against the observed scaling in the `kolmogorov_multifractal_disp.npy` data. This framework rigorously connects Eulerian multifractal statistics to the fractional operator governing Lagrangian particle transport.
+\end{IDEA}
+

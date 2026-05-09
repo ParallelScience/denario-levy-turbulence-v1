@@ -1,0 +1,15 @@
+1. **Eulerian Cascade Analysis**: Compute structure functions $S_p(r) = \langle |\delta u_l|^p \rangle$ for the three cascade datasets ($\mu=0.0, 0.15, 0.28$). Perform linear regression on $\log(S_p)$ vs $\log(r)$ to extract $\zeta_p$, validating against the log-normal model $\zeta_p = p/3 - \mu p(p-3)/18$. Calculate $\xi = 1 + \zeta_2$ for each case. Use bootstrapping across realizations to provide confidence intervals for all exponents.
+
+2. **Kraichnan MSD Scaling and RG Flow**: For each Kraichnan dataset ($\xi \in \{0.5, 0.75, 1.0, 1.5, 1.8\}$), calculate MSD $\langle x^2(t) \rangle$ and perform power-law fits to determine $H$, verifying $H = \xi/2$. For $\xi=1.5$ and $\xi=1.8$, extract $\alpha_{eff}(\tau)$ by performing a log-log fit of $\log(-\log|\phi(k, \tau)|)$ vs $\log|k|$ for each time lag $\tau$. Plot $\alpha_{eff}$ vs $\tau$ to visualize the flow from $\alpha \approx 2$ to $\alpha = 2/\xi$ and estimate the crossover time $\tau_c$.
+
+3. **Mapping Eulerian to Lagrangian**: Using the $\xi(\mu)$ values from Step 1, calculate the predicted fractional exponent $\alpha_{pred} = 2/\xi$. Construct a mapping function relating the intermittency parameter $\mu$ to the expected Lévy index $\alpha$, establishing a theoretical baseline for physical Kolmogorov turbulence ($\xi \approx 5/3$).
+
+4. **Kolmogorov Tracer Statistics**: Analyze the synthetic Kolmogorov datasets (pure vs. multifractal). Estimate the empirical $\alpha$ using the log-log characteristic function fit and, as a secondary check, the Hill estimator for the tail index. Compare these to $\alpha_{pred}$. Explicitly estimate the eddy turnover time $\tau_k$ and correlation time $\tau_{corr}$ to assess if finite-time memory effects cause deviations from the Kraichnan-derived $\alpha = 2/\xi$.
+
+5. **Lorenz-96 Deterministic Analysis**: Compute $S_2(r)$ for the Lorenz-96 snapshots. Inspect the log-log plot of $S_2(r)$ to identify the inertial range, avoiding dissipation and integral scales, and extract the effective $\xi$. Use the tracer displacement statistics to test if the $\alpha = 2/\xi$ relation holds in this deterministic chaotic system, ensuring statistical convergence by using the full snapshot ensemble.
+
+6. **Fractional Operator Identification**: For all datasets, perform a Kolmogorov-Smirnov test against the theoretical Lévy-stable distribution. Normalize tracer displacements by the scale factor $t^{1/\alpha}$ to attempt a collapse of the PDFs onto a single master curve, providing a rigorous test of the fractional diffusion hypothesis.
+
+7. **Synthesis and Robustness**: Consolidate results by plotting extracted $\alpha$ vs. $2/\xi$ across all models. Quantify the shift in $\alpha$ induced by $\mu$ and the impact of finite correlation times (memory effects) on the robustness of the fractional diffusion operator.
+
+8. **Uncertainty Quantification**: Ensure all final estimates for $\alpha$, $H$, and $\xi$ include standard errors derived from bootstrapping the trajectory and snapshot ensembles, providing a rigorous measure of uncertainty for the final mapping of $\mu \to \alpha$.

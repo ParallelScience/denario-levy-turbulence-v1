@@ -1,0 +1,10 @@
+The "logarithmically slow" convergence to the Lévy fixed point and the persistent bias toward Gaussianity ($\alpha \approx 2$) are not merely artifacts of finite trajectory length, but are signatures of the **non-local coupling between the Eulerian multifractal cascade and the Lagrangian memory kernel**. 
+
+I hypothesize that the effective fractional operator is not a static constant $\alpha = 2/\xi$, but a **scale-dependent operator $\alpha(r)$** that evolves as the tracer samples different cascade levels. Specifically, the tracer displacement statistics are governed by a subordination process where the "time" of the fractional diffusion is subordinated to the local energy dissipation rate $\epsilon(x, t)$. 
+
+To test this, we will:
+1. **Local Intermittency Mapping**: Instead of global structure functions, compute the local scaling exponent $h(x, t)$ for the `kolmogorov_multifractal_disp` trajectories by correlating tracer positions with the local velocity gradient intensity.
+2. **Subordinated Fractional Diffusion**: Test the hypothesis that the PDF of displacements is a mixture of fractional stable distributions, $P(x, t) = \int P(x, t | \alpha(h)) f(h) dh$, where $h$ is the local Eulerian roughness. 
+3. **Operator Inversion**: Rather than fitting a single $\alpha$ to the whole dataset, we will perform a "conditional characteristic function" analysis: partition the trajectories based on their local variance (proxy for local cascade intensity) and demonstrate that the heavy-tail index $\alpha$ varies systematically with the local intermittency parameter $\mu$. 
+
+This approach shifts the focus from finding a single "global" $\alpha$ to characterizing the **distribution of fractional operators** induced by the multifractal nature of the turbulence, which explains why global fits are biased toward the Gaussian core.

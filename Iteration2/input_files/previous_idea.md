@@ -1,0 +1,8 @@
+**Title**: Renormalization Group Verification of Fractional Lévy Dynamics in Turbulent Pair Dispersion
+
+**Description**: 
+This study quantifies the emergence of anomalous pair-dispersion as a fixed-point property of the fractional diffusion equation $\partial_t P = -D_\alpha(-\Delta)^{\alpha/2} P$, where the Lévy exponent $\alpha = 2/\xi$ is governed by the Eulerian spectral roughness $\xi = 1 + \zeta_2$. We will perform a four-stage validation: 
+1. Compute the Eulerian spectral roughness $\xi$ for the multifractal cascade ($\mu=0.28$) using the structure function scaling $\zeta_2$ and validate these parameters against the Lorenz-96 deterministic baseline. 
+2. Extract the pair-dispersion scaling exponent $H$ from the `kraichnan_xi*_pair_r2.npy` datasets via log-log regression to confirm the theoretical relation $H = \xi/2$. 
+3. Apply a sliding-window analysis on the characteristic functions $\phi(k, \tau)$ to track the RG flow of $\alpha(\tau)$, explicitly demonstrating the crossover from short-time ballistic behavior ($\alpha \to 2$) to the anomalous diffusion regime ($\alpha \to 2/\xi$). 
+4. Assess the impact of She-Leveque intermittency on the Kolmogorov prediction ($\alpha \approx 1.2$) by comparing the theoretical $\alpha$ against the observed scaling in the `kolmogorov_multifractal_disp.npy` data. This framework rigorously connects Eulerian multifractal statistics to the fractional operator governing Lagrangian particle transport.

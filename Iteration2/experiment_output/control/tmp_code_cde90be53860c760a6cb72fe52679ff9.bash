@@ -1,0 +1,1 @@
+ls -R /home/node/work/projects/levy_turbulence_v1/data/

@@ -1,0 +1,8 @@
+The failure to observe the predicted Lévy exponent $\alpha = 2/\xi$ is not a failure of the fractional diffusion theory, but a consequence of the "pre-asymptotic" nature of the current datasets where the tracer dynamics are dominated by the local velocity field's correlation time rather than the global cascade statistics. 
+
+I hypothesize that the RG flow toward the fixed point $\alpha = 2/\xi$ can be recovered by applying a **time-scale separation filter** to the Lagrangian trajectories. Specifically, by decomposing the tracer velocity $v(t)$ into a "fast" component (small-scale, Gaussian-like) and a "slow" component (large-scale, persistent), we can isolate the contribution of the inertial range to the anomalous diffusion. 
+
+The research plan should:
+1. Perform a wavelet-based multiresolution analysis on the Kraichnan and Kolmogorov tracer trajectories to separate the velocity signal into distinct scale-dependent components.
+2. Reconstruct the tracer displacement using only the "slow" components corresponding to the inertial range scales, effectively filtering out the short-time ballistic "noise" that currently pins $\alpha \approx 2$.
+3. Test if the filtered displacement statistics exhibit a stable Lévy index $\alpha$ that converges to $2/\xi$ significantly faster than the raw data, thereby proving that the fractional operator is the correct effective theory for the inertial range, even when the full simulation is dominated by finite-size effects.

@@ -1,0 +1,73 @@
+\documentclass[]{article}
+
+\usepackage{amsmath}
+\usepackage{multirow}
+\usepackage{natbib}
+\usepackage{graphicx} 
+
+
+\begin{document}
+
+% Auto-generated figures file
+% \usepackage{graphicx}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.5\textwidth]{../input_files/plots/step_2_zeta_p_vs_p_2_1778360956.png}
+    \caption{Scaling exponents $\zeta\_p$ of the Eulerian velocity structure functions versus the moment order $p$ for several turbulence models. The empirical data for the pure Kolmogorov (K41) cascade align with the theoretical linear scaling $\zeta\_p = p/3$. The introduction of intermittency via log-normal models (logN\_mild, logN\_realistic) results in the characteristic nonlinear, concave curvature, with the deviation from linearity increasing with the level of intermittency. In contrast, the deterministic Lorenz-96 model exhibits a significantly flatter scaling profile. These results demonstrate that intermittency systematically increases the second-order exponent $\zeta\_2$, and therefore the Eulerian spectral roughness $\xi$, which is used to predict the nature of the Lagrangian transport.}
+    \label{fig:image1}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.5\textwidth]{../input_files/plots/step_3_velocity_autocorr_3_1778361095.png}
+    \caption{Lagrangian velocity autocorrelation functions, $R\_v(\tau)$, for the Kraichnan model across various spectral roughness exponents ($\xi$) and for the deterministic Lorenz-96 model. The plot demonstrates that the velocity fields in both systems are effectively delta-correlated in time. For the Kraichnan model, the correlation drops instantaneously to zero, reflecting its construction. The Lorenz-96 model also exhibits a rapid decay to zero. This confirmation of the white-in-time approximation is a critical prerequisite, ensuring that observed anomalous diffusion is a consequence of the spatial velocity structure rather than temporal memory effects.}
+    \label{fig:image2}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.5\textwidth]{../input_files/plots/step_4_hill_stability_4_1778361306.png}
+    \caption{Hill plots for the estimation of the Lévy index $\alpha$ from tracer displacements in the Kraichnan model across five values of the Eulerian spectral roughness, $\xi$. Each panel shows the estimated $\alpha$ versus the number of order statistics $k$ at two times, compared with the theoretical prediction $\alpha = 2/\xi$ (dashed line). For the anomalous superdiffusive cases ($\xi=1.5$ and $\xi=1.8$), the estimates fail to converge to the theory and are biased towards the Gaussian limit ($\alpha=2$). This demonstrates the pre-asymptotic trapping of the system, where finite-size effects cause the Gaussian bulk of the displacement distribution to dominate the expected fractional tails.}
+    \label{fig:image4}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.5\textwidth]{../input_files/plots/step_4_kraichnan_msd_4_1778361306.png}
+    \caption{Log-log plot of the Mean Squared Displacement (MSD) versus time for Lagrangian tracers in the 3D Kraichnan model, shown for several values of the Eulerian spectral roughness exponent $\xi$. The legend displays the empirically measured Hurst exponent, $H$, for each case. Contrary to the theoretical prediction of anomalous diffusion where $H = \xi/2$, the measured scaling exponents consistently remain near $H \approx 0.5$, which is characteristic of normal diffusion. This reveals that the system is trapped in a pre-asymptotic state, where the finite size of the simulation's spectral domain prevents the tracers from experiencing the long-range correlations required to manifest the true anomalous scaling within the observed time frame.}
+    \label{fig:image3}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.5\textwidth]{../input_files/plots/step_4_kraichnan_pdf_4_1778361306.png}
+    \caption{Probability Density Functions (PDFs) of Lagrangian tracer displacements at t=40.0 in the Kraichnan model for different Eulerian spectral roughness exponents $\xi$. The distributions show a dominant central bulk, indicating that the system remains in a pre-asymptotic, near-Gaussian regime. This visualizes the impact of finite simulation size, which prevents the emergence of the heavy tails characteristic of the theoretically predicted asymptotic Lévy-stable statistics.}
+    \label{fig:image5}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.5\textwidth]{../input_files/plots/step_5_char_func_scaling_5_1778361494.png}
+    \caption{Scaling of the characteristic function $\phi(k, \tau)$ for different time lags $\tau$ in the Kraichnan model, plotted as the negative logarithm of the characteristic function versus wavenumber $|k|$ on a log-log scale. The slope of each line corresponds to the effective Lévy index $\alpha(\tau)$. The consistent, parallel slopes across all time lags ($\tau \in [0.01, 50.0]$) provide direct evidence that the system remains in a pre-asymptotic state with a near-constant exponent $\alpha(\tau) \approx 2.0$. This demonstrates that the Renormalization Group flow does not reach the predicted anomalous diffusive fixed point within the observed simulation time, trapping the dynamics in a near-Gaussian regime.}
+    \label{fig:image6}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.5\textwidth]{../input_files/plots/step_5_rg_flow_alpha_5_1778361494.png}
+    \caption{Renormalization Group (RG) flow of the effective Lévy index $\alpha(\tau)$ as a function of time lag $\tau$ for Kraichnan model simulations with spectral roughness $\xi=1.5$ and $\xi=1.8$. The empirical exponent, derived from a sliding-window analysis of the characteristic functions (black circles), remains pinned at the Gaussian value $\alpha \approx 2.0$ across the entire range of time lags. This demonstrates a failure to flow towards the theoretically predicted asymptotic fixed points $\alpha = 2/\xi$ (dashed lines), indicating that the simulation remains in a pre-asymptotic state where the crossover time to the fractional Lévy regime is much larger than the observation time.}
+    \label{fig:image7}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.5\textwidth]{../input_files/plots/step_6_kolmogorov_intermittency_6_1778360342.png}
+    \caption{Analysis of 1D synthetic Kolmogorov tracer data for pure K41 (blue) and multifractal (red) turbulence, showing final displacement Probability Density Functions (left) and a comparison of the Lévy index $\alpha$ (right). The empirical results ($\alpha \approx 0.385$ for pure K41 and $\alpha \approx 0.439$ for multifractal) indicate severe subdiffusion, deviating significantly from the theoretical predictions for Lévy flights derived from the 3D Renormalization Group mapping ($\alpha \approx 1.2$). This discrepancy demonstrates that the theoretical mapping breaks down in 1D due to topological trapping effects that suppress particle transport.}
+    \label{fig:image0}
+\end{figure}
+
+
+
+\end{document}
+                

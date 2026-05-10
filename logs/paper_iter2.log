@@ -1,27 +1,27 @@
 /opt/denario-venv/lib/python3.12/site-packages/denario/langgraph_agents/paper_module/LaTeX/AAS_keywords.txt
+Abstract found on Abstract.tex...
 Extracting UNESCO keywords.......
 Found 8 plot files to process....
 Plot files: ['step_6_kolmogorov_intermittency_6_1778360342.png', 'step_2_zeta_p_vs_p_2_1778360956.png', 'step_3_velocity_autocorr_3_1778361095.png']...
 UNESCO keyword extraction failed: 'list' object has no attribute 'find'
-✅✅.................Abstract written
-✅✅✅✅✅✅✅✅...............Captions generated
+...............Captions generated
 ✅................Figures generated
-✅.............Introduction written
-✅..................Methods written
-✅..................Results written
-✅..............Conclusions written
+Introduction found on Introduction.tex
+Methods found on Methods.tex.....
+Results found on Results.tex.....
+Conclusions found on Conclusions.tex
 Compiling paper_v1_preliminary...✅✅
-✅..........Refined results written
+Refined results found on Results_refined.tex
 Compiling paper_v2_no_citations..✅✅
-   - Citations added to Introduction
-   - Citations added to Methods
+Introduction with citations read from Introduction_w_citations.tex
+Methods with citations read from Methods_w_citations.tex
 Sanitized BibTeX saved to: /home/node/work/projects/levy_turbulence_v1/Iteration2/paper_output/bibliography.bib
 ✅ Citations added to all sections.
 Compiling paper_v3_citations.....✅✅✅
-Refining Introduction with citations
-Refining Methods with citations
-✅  - Introduction with citations refined
-✅  - Methods with citations refined
+Refining Introduction with citationsRefining Methods with citations
+
+Refined Introduction with citations read from Introduction_w_citations2.tex
+Refined Methods with citations read from Methods_w_citations2.tex
 Compiling paper_v4_final.........✅✅✅
-Paper written in 13 min 4 sec.
-Cost: $0.773
+Paper written in 0 min 55 sec.
+Cost: $0.0012

@@ -1,0 +1,7 @@
+Classifier: Step 1 — Determining archive...
+  Archive: physics — The paper focuses on fluid dynamics and turbulence, which are core topics within the physics archive.
+Classifier: Step 2 — Determining subcategory within 'physics'...
+  Primary: physics.flu-dyn
+  Secondary: physics.class-ph, physics.comp-ph
+  Justification: The paper focuses on turbulence, energy cascades, and Lagrangian transport, which are core topics in fluid dynamics. It also employs classical physics frameworks (Renormalization Group, diffusion theory) and computational physics methods (numerical modeling of synthetic turbulence).
+Classification completed in 0 min 2 sec. Cost: $0.0000

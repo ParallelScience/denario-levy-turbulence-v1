@@ -1,0 +1,8 @@
+{
+  "primary_category": "physics.flu-dyn",
+  "secondary_categories": [
+    "physics.class-ph",
+    "physics.comp-ph"
+  ],
+  "justification": "The paper focuses on turbulence, energy cascades, and Lagrangian transport, which are core topics in fluid dynamics. It also employs classical physics frameworks (Renormalization Group, diffusion theory) and computational physics methods (numerical modeling of synthetic turbulence)."
+}
